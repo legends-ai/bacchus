@@ -1,6 +1,7 @@
-package riot
+package clients
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -17,8 +18,8 @@ type RiotAPISettings struct {
 func (r RiotAPISettings) Create() *RiotAPI {
 	return &RiotAPI{
 		RiotAPISettings: r,
-		apiBase:         fmt.Sprintf("http://%s.api.pvp.net", r.Region),
-		apiLol:          fmt.Sprintf("http://%s.api.pvp.net/api/lol/%s", r.Region, r.Region),
+		apiBase:         fmt.Sprintf("https://%s.api.pvp.net", r.Region),
+		apiLol:          fmt.Sprintf("https://%s.api.pvp.net/api/lol/%s", r.Region, r.Region),
 	}
 }
 
@@ -29,10 +30,33 @@ type RiotAPI struct {
 	apiLol  string
 }
 
+type FeaturedGamesResponse struct {
+	GameList []FeaturedGame `json:"gameList"`
+}
+
+type FeaturedGame struct {
+	GameId       int                       `json:"gameId"`
+	Participants []FeaturedGameParticipant `json:"participants"`
+}
+
+type FeaturedGameParticipant struct {
+	SummonerName string `json:"summonerName"`
+}
+
 // FeaturedGames gets featured games
-func (r *RiotAPI) FeaturedGames() (*http.Response, error) {
-	return r.fetchWithKey(
+func (r *RiotAPI) FeaturedGames() (*FeaturedGamesResponse, error) {
+	resp, err := r.fetchWithKey(
 		fmt.Sprintf("%s/observer-mode/rest/featured", r.apiBase))
+	if err != nil {
+		return nil, err
+	}
+	var ret FeaturedGamesResponse
+	defer resp.Body.Close()
+	err = json.NewDecoder(resp.Body).Decode(&ret)
+	if err != nil {
+		return nil, err
+	}
+	return &ret, nil
 }
 
 // Game gets recent games of a summoner
