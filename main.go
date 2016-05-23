@@ -9,8 +9,12 @@ import (
 )
 
 func main() {
+	apiKey := os.Getenv("RIOT_API_KEY")
+	if apiKey == "" {
+		log.Fatalf("Missing RIOT_API_KEY variable")
+	}
 	api := clients.RiotAPISettings{
-		APIKey: os.Getenv("RIOT_API_KEY"),
+		APIKey: apiKey,
 		Region: "na",
 	}.Create()
 	s, err := spider.Create(api)
