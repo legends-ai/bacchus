@@ -7,18 +7,19 @@ type QueueSettings struct {
 
 // Queue stores visited and unvisited elements backed by a buffered channel
 type Queue struct {
-	*QueueSettings
+	QueueSettings
 	Visited   StringSet
 	Unvisited StringSet
 	Channel   chan string
 }
 
 // Create a queue
-func (q *QueueSettings) Create() *Queue {
+func (q QueueSettings) Create() *Queue {
 	return &Queue{
-		Visited:   StringSet{},
-		Unvisited: StringSet{},
-		Channel:   make(chan string, q.Concurrency),
+		QueueSettings: q,
+		Visited:       StringSet{},
+		Unvisited:     StringSet{},
+		Channel:       make(chan string, q.Concurrency),
 	}
 }
 

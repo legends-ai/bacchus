@@ -1,7 +1,7 @@
 all: clean build
 
 build:
-	go build ./...
+	go build .
 
 clean:
-	rm gragas
+	rm gragas || :
