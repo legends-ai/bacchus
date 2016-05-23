@@ -1,5 +1,7 @@
 package structures
 
+import "fmt"
+
 // QueueSettings represents settings to build a queue
 type QueueSettings struct {
 	Concurrency int
@@ -51,4 +53,10 @@ func (q *Queue) ForceOffer(s string) {
 // Complete marks an element as visited
 func (q *Queue) Complete(s string) {
 	q.Visited.Add(s)
+}
+
+// Print prints the queue contents
+func (q *Queue) Print() {
+	fmt.Printf("Visited: %v\n", q.Visited.Values())
+	fmt.Printf("Unvisited: %v\n", q.Unvisited.Values())
 }

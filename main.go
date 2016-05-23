@@ -13,9 +13,10 @@ func main() {
 		APIKey: os.Getenv("RIOT_API_KEY"),
 		Region: "na",
 	}.Create()
-	_, err := spider.Create(api)
+	s, err := spider.Create(api)
 	if err != nil {
 		log.Fatalf("Cannot initialize spider: %v", err)
 		return
 	}
+	s.Games.Print()
 }
