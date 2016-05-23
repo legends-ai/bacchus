@@ -38,20 +38,20 @@ func (r *RiotAPI) FeaturedGames() (*http.Response, error) {
 // Game gets recent games of a summoner
 func (r *RiotAPI) Game(summonerId string) (*http.Response, error) {
 	return r.fetchWithKey(
-		fmt.Sprintf("%s/v1.3/game/by-summoner/%s/recent", r.apiBase, summonerId))
+		fmt.Sprintf("%s/v1.3/game/by-summoner/%s/recent", r.apiLol, summonerId))
 }
 
 // Match gets match details
 func (r *RiotAPI) Match(matchId string) (*http.Response, error) {
 	return r.fetchWithKey(
-		fmt.Sprintf("%s/v2.2/match/%s", r.apiBase, matchId))
+		fmt.Sprintf("%s/v2.2/match/%s", r.apiLol, matchId))
 }
 
 // SummonerByName gets multiple summoners by name
 func (r *RiotAPI) SummonerByName(summonerNames []string) (*http.Response, error) {
 	return r.fetchWithKey(
 		fmt.Sprintf("%s/v1.4/summoner/by-name/%s",
-			r.apiBase, strings.Join(summonerNames, ",")))
+			r.apiLol, strings.Join(summonerNames, ",")))
 }
 
 func (r *RiotAPI) fetch(url string) (*http.Response, error) {
