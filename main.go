@@ -8,10 +8,14 @@ import (
 	"github.com/simplyianm/gragas/spider"
 )
 
+const (
+	envRiotApiKey = "RIOT_API_KEY"
+)
+
 func main() {
-	apiKey := os.Getenv("RIOT_API_KEY")
+	apiKey := os.Getenv(envRiotApiKey)
 	if apiKey == "" {
-		log.Fatalf("Missing RIOT_API_KEY variable")
+		log.Fatalf("Missing %s variable", apiKey)
 	}
 	api := clients.RiotAPISettings{
 		APIKey: apiKey,
