@@ -39,7 +39,7 @@ func (s *Spider) seedFromFeaturedGames() error {
 	for _, g := range r.GameList {
 		s.Games.Offer(strconv.Itoa(g.GameId))
 		for _, p := range g.Participants {
-			s.Games.Offer(p.SummonerName)
+			s.Summoners.Offer(p.SummonerName)
 		}
 	}
 	return nil
