@@ -2,26 +2,23 @@ package structures
 
 import "fmt"
 
-// QueueSettings represents settings to build a queue
-type QueueSettings struct {
-	Concurrency int
-}
+const (
+	maxPending = 1000000
+)
 
 // Queue stores visited and unvisited elements backed by a buffered channel
 type Queue struct {
-	QueueSettings
 	Visited   StringSet
 	Unvisited StringSet
 	Channel   chan string
 }
 
-// Create a queue
-func (q QueueSettings) Create() *Queue {
+// NewQueue creates a new queue
+func NewQueue() *Queue {
 	return &Queue{
-		QueueSettings: q,
-		Visited:       StringSet{},
-		Unvisited:     StringSet{},
-		Channel:       make(chan string, q.Concurrency),
+		Visited:   StringSet{},
+		Unvisited: StringSet{},
+		Channel:   make(chan string, maxPending),
 	}
 }
 
@@ -37,17 +34,15 @@ func (q *Queue) Offer(s string) {
 	}
 }
 
-// Poll polls the queue for the next element
-func (q *Queue) Poll() string {
-	ret := <-q.Channel
-	q.Unvisited.Remove(ret)
-	return ret
-}
-
 // ForceOffer queues an element for visitation
 func (q *Queue) ForceOffer(s string) {
 	q.Unvisited.Add(s)
 	q.Channel <- s
+}
+
+// Start removes an element from the unvisited queue
+func (q *Queue) Start(s string) {
+	q.Unvisited.Remove(s)
 }
 
 // Complete marks an element as visited

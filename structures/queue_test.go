@@ -8,30 +8,24 @@ import (
 
 // TestQueuePollOffer tests offering and polling a queue.
 func TestQueuePollOffer(t *testing.T) {
-	q := QueueSettings{
-		Concurrency: 100,
-	}.Create()
+	q := NewQueue()
 	q.Offer("a")
 	q.Offer("b")
 	assert.True(t, q.Has("a"))
 	assert.True(t, q.Has("b"))
 	assert.False(t, q.Has("c"))
-	assert.Equal(t, q.Poll(), "a")
-	assert.Equal(t, q.Poll(), "b")
+	assert.Equal(t, <-q.Channel, "a")
+	assert.Equal(t, <-q.Channel, "b")
 }
 
 func TestQueueComplete(t *testing.T) {
-	q := QueueSettings{
-		Concurrency: 100,
-	}.Create()
+	q := NewQueue()
 	q.Complete("test")
 	assert.True(t, q.Has("test"))
 }
 
 func TestQueueOfferBlockedIfComplete(t *testing.T) {
-	q := QueueSettings{
-		Concurrency: 100,
-	}.Create()
+	q := NewQueue()
 	q.Complete("test")
 	q.Offer("test")
 	assert.False(t, q.Unvisited.Has("test"))
