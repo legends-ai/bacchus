@@ -28,12 +28,6 @@ type API struct {
 	apiLol  string
 }
 
-// Game gets recent games of a summoner
-func (r *API) Game(summonerId string) (*http.Response, error) {
-	return r.fetchWithKey(
-		fmt.Sprintf("%s/v1.3/game/by-summoner/%s/recent", r.apiLol, summonerId))
-}
-
 func (r *API) fetch(url string) (*http.Response, error) {
 	return http.Get(url)
 }

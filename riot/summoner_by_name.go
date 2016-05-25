@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-type SummonerByNameResponse map[string]Summoner
+type SummonerByNameResponse map[string]*Summoner
 
 type Summoner struct {
 	Id int `json:"id"`
