@@ -2,7 +2,6 @@ package spider
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/simplyianm/gragas/riot"
 	"github.com/simplyianm/gragas/structures"
@@ -35,7 +34,6 @@ func (s *Spider) seedFromFeaturedGames() error {
 		return fmt.Errorf("Could not get featured games: %v", err)
 	}
 	for _, g := range r.GameList {
-		s.Games.Offer(strconv.Itoa(g.GameId))
 		for _, p := range g.Participants {
 			s.Summoners.Offer(p.SummonerName)
 		}
