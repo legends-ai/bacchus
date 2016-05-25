@@ -15,7 +15,7 @@ const (
 func main() {
 	apiKey := os.Getenv(envRiotApiKey)
 	if apiKey == "" {
-		log.Fatalf("Missing %s variable", apiKey)
+		log.Fatalf("Missing %s variable", envRiotApiKey)
 	}
 	api := clients.RiotAPISettings{
 		APIKey: apiKey,

@@ -5,3 +5,9 @@ build:
 
 clean:
 	rm gragas || :
+
+test:
+	go test ./...
+
+serve: all
+	./gragas
