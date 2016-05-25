@@ -34,12 +34,6 @@ func (r *API) Game(summonerId string) (*http.Response, error) {
 		fmt.Sprintf("%s/v1.3/game/by-summoner/%s/recent", r.apiLol, summonerId))
 }
 
-// Match gets match details
-func (r *API) Match(matchId string) (*http.Response, error) {
-	return r.fetchWithKey(
-		fmt.Sprintf("%s/v2.2/match/%s", r.apiLol, matchId))
-}
-
 func (r *API) fetch(url string) (*http.Response, error) {
 	return http.Get(url)
 }

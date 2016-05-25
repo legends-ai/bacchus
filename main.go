@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/simplyianm/gragas/riot"
 	"github.com/simplyianm/gragas/spider"
 )
@@ -28,4 +29,7 @@ func main() {
 		return
 	}
 	s.Games.Print()
+	s.Summoners.Print()
+	r, err := api.Match(s.Games.Unvisited.Values()[0])
+	spew.Dump(r)
 }
