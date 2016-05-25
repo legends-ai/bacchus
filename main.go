@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/simplyianm/gragas/clients"
+	"github.com/simplyianm/gragas/riot"
 	"github.com/simplyianm/gragas/spider"
 )
 
@@ -18,7 +18,7 @@ func main() {
 	if apiKey == "" {
 		log.Fatalf("Missing %s variable", envRiotApiKey)
 	}
-	api := clients.RiotAPISettings{
+	api := riot.APISettings{
 		APIKey: apiKey,
 		Region: "na",
 	}.Create()

@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/simplyianm/gragas/clients"
+	"github.com/simplyianm/gragas/riot"
 	"github.com/simplyianm/gragas/structures"
 )
 
 type Spider struct {
-	Riot        *clients.RiotAPI
+	Riot        *riot.API
 	Games       *structures.Queue
 	Summoners   *structures.Queue
 	Concurrency int
 }
 
-func Create(api *clients.RiotAPI, concurrency int) (*Spider, error) {
+func Create(api *riot.API, concurrency int) (*Spider, error) {
 	s := &Spider{
 		Riot:        api,
 		Games:       structures.NewQueue(),
@@ -68,7 +68,11 @@ func (s *Spider) process() {
 }
 
 func (s *Spider) processGame(g string) {
+	s.Games.Start(g)
+	defer s.Games.Complete(g)
 }
 
 func (s *Spider) processSummoner(summoner string) {
+	s.Summoners.Start(summoner)
+	defer s.Summoners.Complete(summoner)
 }
