@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/simplyianm/gragas/riot"
 	"github.com/simplyianm/gragas/spider"
 )
@@ -29,16 +29,13 @@ func main() {
 		log.Fatalf("Cannot initialize spider: %v", err)
 		return
 	}
-	name := s.Summoners.Unvisited.Values()[0]
-	sum, err := api.SummonerByName([]string{name})
-	for _, summoner := range sum {
-		r, _ := api.Game(strconv.Itoa(summoner.Id))
-		games := r.Games
-		gameIds := []int{}
-		for _, g := range games {
-			gameIds = append(gameIds, g.GameId)
-		}
-		spew.Dump(gameIds)
-		break
+
+	r, _ := api.Game(s.Summoners.Unvisited.Values()[0])
+	games := r.Games
+	gameIds := []int{}
+	for _, g := range games {
+		gameIds = append(gameIds, g.GameId)
 	}
+	x, _ := api.Match(strconv.Itoa(gameIds[0]))
+	fmt.Println(x.RawJSON)
 }

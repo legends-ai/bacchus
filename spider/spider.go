@@ -2,9 +2,15 @@ package spider
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/simplyianm/gragas/riot"
 	"github.com/simplyianm/gragas/structures"
+	"github.com/simplyianm/gragas/util"
+)
+
+const (
+	nameChunkSize = 10
 )
 
 type Spider struct {
@@ -33,9 +39,24 @@ func (s *Spider) seedFromFeaturedGames() error {
 	if err != nil {
 		return fmt.Errorf("Could not get featured games: %v", err)
 	}
+	names := structures.StringSet{}
 	for _, g := range r.GameList {
 		for _, p := range g.Participants {
-			s.Summoners.Offer(p.SummonerName)
+			names.Add(p.SummonerName)
+		}
+	}
+	return s.seedSummoners(names.Values())
+}
+
+func (s *Spider) seedSummoners(summoners []string) error {
+	chunks := util.Chunk(summoners, nameChunkSize)
+	for _, chunk := range chunks {
+		sum, err := s.Riot.SummonerByName(chunk)
+		if err != nil {
+			return err
+		}
+		for _, summoner := range sum {
+			s.Summoners.Offer(strconv.Itoa(summoner.Id))
 		}
 	}
 	return nil
@@ -68,6 +89,14 @@ func (s *Spider) process() {
 func (s *Spider) processGame(g string) {
 	s.Games.Start(g)
 	defer s.Games.Complete(g)
+	resp, err := s.Riot.Match(g)
+	if err != nil {
+		// TODO(simplyianm): retry bad games
+		return
+	}
+	json := resp.RawJSON
+	// TODO(simplyianm): store json
+	fmt.Println(json)
 }
 
 func (s *Spider) processSummoner(summoner string) {
