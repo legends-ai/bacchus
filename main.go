@@ -33,7 +33,12 @@ func main() {
 	sum, err := api.SummonerByName([]string{name})
 	for _, summoner := range sum {
 		r, _ := api.Game(strconv.Itoa(summoner.Id))
-		spew.Dump(r)
+		games := r.Games
+		gameIds := []int{}
+		for _, g := range games {
+			gameIds = append(gameIds, g.GameId)
+		}
+		spew.Dump(gameIds)
 		break
 	}
 }

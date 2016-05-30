@@ -6,7 +6,7 @@ import (
 )
 
 type MatchResponse struct {
-	RawJSON string
+	RawJSON string `json:"-"`
 }
 
 // Match gets match details

@@ -1,12 +1,17 @@
 package riot
 
 import (
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
 )
 
 type GameResponse struct {
-	RawJSON string
+	SummonerId int    `json:"summonerId"`
+	Games      []Game `json:"games"`
+}
+
+type Game struct {
+	GameId int `json:"gameId"`
 }
 
 // Game gets recent games of a summoner
@@ -14,12 +19,11 @@ func (r *API) Game(summonerId string) (*GameResponse, error) {
 	resp, err := r.fetchWithKey(
 		fmt.Sprintf("%s/v1.3/game/by-summoner/%s/recent", r.apiLol, summonerId))
 	fmt.Println(fmt.Sprintf("%s/v1.3/game/by-summoner/%s/recent", r.apiLol, summonerId))
-	defer resp.Body.Close()
 	var g GameResponse
-	s, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	err = json.NewDecoder(resp.Body).Decode(&g)
 	if err != nil {
-		return nil, fmt.Errorf("Could not read game response: %v", err)
+		return nil, err
 	}
-	g.RawJSON = string(s)
 	return &g, nil
 }
