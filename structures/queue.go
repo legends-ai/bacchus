@@ -8,16 +8,16 @@ const (
 
 // Queue stores visited and unvisited elements backed by a buffered channel
 type Queue struct {
-	Visited   StringSet
-	Unvisited StringSet
+	Visited   *StringSet
+	Unvisited *StringSet
 	Channel   chan string
 }
 
 // NewQueue creates a new queue
 func NewQueue() *Queue {
 	return &Queue{
-		Visited:   StringSet{},
-		Unvisited: StringSet{},
+		Visited:   NewStringSet(),
+		Unvisited: NewStringSet(),
 		Channel:   make(chan string, maxPending),
 	}
 }

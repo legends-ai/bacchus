@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/simplyianm/gragas/riot"
 	"github.com/simplyianm/gragas/spider"
@@ -29,13 +27,6 @@ func main() {
 		log.Fatalf("Cannot initialize spider: %v", err)
 		return
 	}
-
-	r, _ := api.Game(s.Summoners.Unvisited.Values()[0])
-	games := r.Games
-	gameIds := []int{}
-	for _, g := range games {
-		gameIds = append(gameIds, g.GameId)
-	}
-	x, _ := api.Match(strconv.Itoa(gameIds[0]))
-	fmt.Println(x.RawJSON)
+	s.Start()
+	select {}
 }

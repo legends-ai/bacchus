@@ -13,6 +13,7 @@ const (
 	nameChunkSize = 20
 )
 
+// Spider represents a spider to search the riot API
 type Spider struct {
 	Riot        *riot.API
 	Games       *structures.Queue
@@ -39,7 +40,7 @@ func (s *Spider) seedFromFeaturedGames() error {
 	if err != nil {
 		return fmt.Errorf("Could not get featured games: %v", err)
 	}
-	names := structures.StringSet{}
+	names := structures.NewStringSet()
 	for _, g := range r.GameList {
 		for _, p := range g.Participants {
 			names.Add(p.SummonerName)
@@ -76,12 +77,17 @@ func (s *Spider) process() {
 			if !more {
 				continue
 			}
+			fmt.Println(g)
 			s.processGame(g)
+
 		case summoner, more := <-s.Summoners.Channel:
+			fmt.Println("hi2")
 			if !more {
 				continue
 			}
+			fmt.Println(summoner)
 			s.processSummoner(summoner)
+
 		}
 	}
 }
@@ -96,10 +102,19 @@ func (s *Spider) processGame(g string) {
 	}
 	json := resp.RawJSON
 	// TODO(simplyianm): store json
+	fmt.Printf("scraped %s\n", g)
 	fmt.Println(json)
 }
 
 func (s *Spider) processSummoner(summoner string) {
 	s.Summoners.Start(summoner)
 	defer s.Summoners.Complete(summoner)
+	resp, err := s.Riot.Game(summoner)
+	if err != nil {
+		// TODO(simplyianm): retry bad summoners
+		return
+	}
+	for _, g := range resp.Games {
+		s.Games.Offer(strconv.Itoa(g.GameId))
+	}
 }
