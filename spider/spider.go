@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	nameChunkSize = 10
+	nameChunkSize = 20
 )
 
 type Spider struct {

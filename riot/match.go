@@ -34,7 +34,10 @@ func (r *API) Match(matchId string) (*MatchResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Could not read match response: %v", err)
 	}
-	err = json.NewDecoder(resp.Body).Decode(&m)
+	err = json.Unmarshal(s, &m)
+	if err != nil {
+		return nil, fmt.Errorf("Could not unmarshal match response: %v", err)
+	}
 	m.RawJSON = string(s)
 	return &m, nil
 }
