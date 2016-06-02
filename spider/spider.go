@@ -84,7 +84,6 @@ func (s *Spider) process() {
 				continue
 			}
 			s.processSummoner(summoner)
-
 		}
 	}
 }
