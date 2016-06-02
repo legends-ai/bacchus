@@ -96,6 +96,7 @@ func (s *Spider) processGame(g string) {
 		// TODO(simplyianm): retry bad games
 		return
 	}
+	// TODO(simplyianm): call league service
 	json := resp.RawJSON
 	// TODO(simplyianm): store json
 	fmt.Printf("scraped %s\n", g)
