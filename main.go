@@ -8,14 +8,11 @@ import (
 )
 
 const (
-	envRiotApiKey = "RIOT_API_KEY"
-	concurrency   = 10
+	concurrency = 10
 )
 
 func main() {
-	api := riot.APISettings{
-		Region: "na",
-	}.Create()
+	api := riot.Create("na")
 	s, err := spider.Create(api, concurrency)
 	if err != nil {
 		log.Fatalf("Cannot initialize spider: %v", err)

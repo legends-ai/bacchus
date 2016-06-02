@@ -7,27 +7,26 @@ import (
 	"os"
 )
 
-// APISettings builds the API
-type APISettings struct {
-	Region string
-}
+const (
+	envRiot = "RIOT_BASE"
+)
 
 // Create creates a API
-func (r APISettings) Create() *API {
-	base := os.Getenv("GRAGAS_RIOT_BASE")
+func Create(region string) *API {
+	base := os.Getenv(envRiot)
 	if base == "" {
 		base = "http://localhost:3006"
 	}
 	return &API{
-		APISettings: r,
-		apiBase:     base,
-		apiLol:      fmt.Sprintf("%s/api/lol/%s", base, r.Region),
+		Region:  region,
+		apiBase: base,
+		apiLol:  fmt.Sprintf("%s/api/lol/%s", base, region),
 	}
 }
 
 // API is the Riot API interface
 type API struct {
-	APISettings
+	Region  string
 	apiBase string
 	apiLol  string
 }
