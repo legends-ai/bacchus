@@ -14,10 +14,11 @@ type APISettings struct {
 
 // Create creates a API
 func (r APISettings) Create() *API {
+	base := fmt.Sprintf("https://%s.api.pvp.net", r.Region)
 	return &API{
 		APISettings: r,
-		apiBase:     fmt.Sprintf("https://%s.api.pvp.net", r.Region),
-		apiLol:      fmt.Sprintf("https://%s.api.pvp.net/api/lol/%s", r.Region, r.Region),
+		apiBase:     base,
+		apiLol:      fmt.Sprintf("%s/api/lol/%s", base, r.Region),
 	}
 }
 
