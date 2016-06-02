@@ -26,7 +26,7 @@ type MatchResponsePlayer struct {
 
 // Match gets match details
 func (r *API) Match(matchId string) (*MatchResponse, error) {
-	resp, err := r.fetchWithKey(
+	resp, err := r.fetch(
 		fmt.Sprintf("%s/v2.2/match/%s", r.apiLol, matchId))
 	var m MatchResponse
 	defer resp.Body.Close()

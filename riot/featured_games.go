@@ -20,7 +20,7 @@ type FeaturedGameParticipant struct {
 
 // FeaturedGames gets featured games
 func (r *API) FeaturedGames() (*FeaturedGamesResponse, error) {
-	resp, err := r.fetchWithKey(
+	resp, err := r.fetch(
 		fmt.Sprintf("%s/observer-mode/rest/featured", r.apiBase))
 	if err != nil {
 		return nil, err

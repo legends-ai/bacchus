@@ -45,7 +45,7 @@ type FeaturedGameParticipant struct {
 
 // FeaturedGames gets featured games
 func (r *RiotAPI) FeaturedGames() (*FeaturedGamesResponse, error) {
-	resp, err := r.fetchWithKey(
+	resp, err := r.fetch(
 		fmt.Sprintf("%s/observer-mode/rest/featured", r.apiBase))
 	if err != nil {
 		return nil, err
@@ -105,7 +105,7 @@ func (r *RiotAPI) fetchWithKey(u string) (*http.Response, error) {
 	return r.fetchWithKeyAndParams(u, url.Values{})
 }
 
-func (r *RiotAPI) fetchWithKeyAndParams(u string, params url.Values) (*http.Response, error) {
+func (r *RiotAPI) fetchAndParams(u string, params url.Values) (*http.Response, error) {
 	params["api_key"] = []string{r.APIKey}
 	return r.fetch(fmt.Sprintf("%s?%s", u, params.Encode()))
 }

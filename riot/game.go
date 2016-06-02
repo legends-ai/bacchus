@@ -16,7 +16,7 @@ type Game struct {
 
 // Game gets recent games of a summoner
 func (r *API) Game(summonerId string) (*GameResponse, error) {
-	resp, err := r.fetchWithKey(
+	resp, err := r.fetch(
 		fmt.Sprintf("%s/v1.3/game/by-summoner/%s/recent", r.apiLol, summonerId))
 	var g GameResponse
 	defer resp.Body.Close()
