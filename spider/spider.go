@@ -77,15 +77,12 @@ func (s *Spider) process() {
 			if !more {
 				continue
 			}
-			fmt.Println(g)
 			s.processGame(g)
 
 		case summoner, more := <-s.Summoners.Channel:
-			fmt.Println("hi2")
 			if !more {
 				continue
 			}
-			fmt.Println(summoner)
 			s.processSummoner(summoner)
 
 		}
