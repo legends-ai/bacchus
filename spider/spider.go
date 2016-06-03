@@ -57,7 +57,7 @@ func (s *Spider) seedSummoners(summoners []string) error {
 			return err
 		}
 		for _, summoner := range sum {
-			s.Summoners.Offer(strconv.Itoa(summoner.Id))
+			s.Summoners.Offer(strconv.Itoa(summoner.ID))
 		}
 	}
 	return nil
@@ -112,6 +112,6 @@ func (s *Spider) processSummoner(summoner string) {
 		return
 	}
 	for _, g := range resp.Games {
-		s.Games.Offer(strconv.Itoa(g.GameId))
+		s.Games.Offer(strconv.Itoa(g.GameID))
 	}
 }
