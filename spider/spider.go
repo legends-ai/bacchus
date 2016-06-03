@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/simplyianm/gragas/riot"
 	"github.com/simplyianm/gragas/structures"
 	"github.com/simplyianm/gragas/util"
+	"github.com/simplyianm/riotclient"
 )
 
 const (
@@ -15,13 +15,13 @@ const (
 
 // Spider represents a spider to search the riot API
 type Spider struct {
-	Riot        *riot.API
+	Riot        *riotclient.API
 	Games       *structures.Queue
 	Summoners   *structures.Queue
 	Concurrency int
 }
 
-func Create(api *riot.API, concurrency int) (*Spider, error) {
+func Create(api *riotclient.API, concurrency int) (*Spider, error) {
 	s := &Spider{
 		Riot:        api,
 		Games:       structures.NewQueue(),

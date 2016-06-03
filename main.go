@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/simplyianm/gragas/riot"
 	"github.com/simplyianm/gragas/spider"
+	"github.com/simplyianm/riotclient"
 )
 
 const (
@@ -12,7 +12,7 @@ const (
 )
 
 func main() {
-	api := riot.Create("na")
+	api := riotclient.Create("na")
 	s, err := spider.Create(api, concurrency)
 	if err != nil {
 		log.Fatalf("Cannot initialize spider: %v", err)
