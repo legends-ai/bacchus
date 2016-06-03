@@ -1,0 +1,8 @@
+hash: 839231202993ab99c79dfe71c7a87f03b276bb766f0be1b800f3d1a763efcd8a
+updated: 2016-06-02T22:21:55.645868092-04:00
+imports:
+- name: github.com/simplyianm/riotclient
+  version: b2107cfefb3797fd5129b715a62ae35d39356adf
+  repo: git@github.com:simplyianm/riotclient.git
+  vcs: git
+devImports: []
