@@ -2,6 +2,7 @@ package structures
 
 import "sync"
 
+// StringSet is a set that contains strings
 type StringSet struct {
 	Map   map[string]bool
 	Mutex sync.Mutex
