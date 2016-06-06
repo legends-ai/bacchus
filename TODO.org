@@ -1,0 +1,10 @@
+* Todos for Gragas
+
+** TODO store visited games in Redis
+Prevent reading the same match twice.
+
+** TODO store stuff in S3
+Look into S3 Golang api?
+
+** TODO batch and aggregate JSON RDDs
+In order to put stuff into S3
