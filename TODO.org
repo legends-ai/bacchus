@@ -1,5 +1,8 @@
 * Todos for Gragas
 
+** TODO servicify
+Call HTTP endpoint to execute a scrape.
+
 ** TODO store visited games in Redis
 Prevent reading the same match twice.
 
