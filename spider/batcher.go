@@ -20,7 +20,7 @@ func (b *Batcher) Add(json string) {
 // Start starts the batcher
 func (b *Batcher) Start() {
 	for {
-		json, more := <-b.input
+		json := <-b.input
 		b.batch.Write([]byte(json + "\n"))
 	}
 }
