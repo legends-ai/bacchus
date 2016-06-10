@@ -21,21 +21,24 @@ type Spider struct {
 	Concurrency int
 }
 
-func Create(api *riotclient.API, concurrency int) (*Spider, error) {
-	s := &Spider{
+func Create(api *riotclient.API, concurrency int) *Spider {
+	return &Spider{
 		Riot:        api,
 		Games:       structures.NewQueue(),
 		Summoners:   structures.NewQueue(),
 		Concurrency: concurrency,
 	}
-	err := s.seedFromFeaturedGames()
-	if err != nil {
-		return nil, err
-	}
-	return s, nil
 }
 
-func (s *Spider) seedFromFeaturedGames() error {
+// SeedSummoners seeds the summoners
+func (s *Spider) SeedSummoners(summonerIds []string) {
+	for _, summoner := range summonerIds {
+		s.Summoners.Offer(summoner)
+	}
+}
+
+// SeedFromFeaturedGames seeds the spider with featured games summoners
+func (s *Spider) SeedFromFeaturedGames() error {
 	r, err := s.Riot.FeaturedGames()
 	if err != nil {
 		return fmt.Errorf("Could not get featured games: %v", err)
@@ -46,10 +49,10 @@ func (s *Spider) seedFromFeaturedGames() error {
 			names.Add(p.SummonerName)
 		}
 	}
-	return s.seedSummoners(names.Values())
+	return s.seedSummonersByName(names.Values())
 }
 
-func (s *Spider) seedSummoners(summoners []string) error {
+func (s *Spider) seedSummonersByName(summoners []string) error {
 	chunks := util.Chunk(summoners, nameChunkSize)
 	for _, chunk := range chunks {
 		sum, err := s.Riot.SummonerByName(chunk)

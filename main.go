@@ -13,9 +13,9 @@ const (
 
 func main() {
 	api := riotclient.Create("na")
-	s, err := spider.Create(api, concurrency)
-	if err != nil {
-		log.Fatalf("Cannot initialize spider: %v", err)
+	s := spider.Create(api, 10)
+	if err := s.SeedFromFeaturedGames(); err != nil {
+		log.Fatalf("Cannot seed spider: %v", err)
 		return
 	}
 	s.Start()
