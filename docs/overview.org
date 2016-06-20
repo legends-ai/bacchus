@@ -29,7 +29,7 @@ The arbiter determines if elements can be inserted. It is simply a function that
 
 The processor consumes elements from the channel. Many processors can be running concurrently for each queue -- this is configurable through environment variables.
 
-The queues store "regioned strings" -- that is, strings associated with a Riot region (na, eu, etc.).
+The queues have a specific region that they process. Multiple queues should be constructed to support multiple regions.
 
 ** Match Queue Processing
 The match queue processor performs the following steps:
@@ -62,6 +62,12 @@ The summoner arbiter is an in-memory set. We could use Redis or something so the
 In the beginning, the summoner queue is populated. It reads all keys from the league table in Cassandra and uses the union of this and the summoner name "AlbireoX". This will be a huge 50MB+ queue. may need to be rethought. This will run asynchronously.
 
 Then, the match and summoner queues are initialized, and their processors are run with the appropriate concurrencies.
+
+** Cassandra
+We will have a two node Cassandra cluster running on AWS EC2 and EBS. These clusters will be storing around 30GB of data.
+
+** Riot API
+The Riot API will pool API keys given at a constant interval to deal with Riot's rate limiting.
 
 * Caveats
 
