@@ -1,0 +1,78 @@
+#+TITLE: Gragas
+
+* Overview
+Gragas is a CLI tool that pulls match data from the Riot API and stores it in a data store that can be processed by Apache Spark on Elastic MapReduce.
+
+It spiders the Riot API and stores match and summoner league data in Cassandra tables. The data is to be further processed by a tool such as Apache Spark.
+
+* Implementation
+
+In essence, Gragas loops over the following steps:
+
+1. Get a list of summoners.
+2. Get all matches associated with those summoners.
+3. For each match, get all summoners in the match.
+4. For all summoners, get the league of the summoner.
+5. Find the lowest league of all summoners and write it to the match.
+6. Write the match to Cassandra.
+7. Write the summoner league to Cassandra.
+8. Add the summoner to the list of summoners to spider.
+
+While this all seems really simple, there is a lot actually going on here. I will describe the details of this in the following section.
+
+** Queues
+There are two queues that hold the state of the scraper: the match queue and the summoner queue. Each queue consists three components: the channel, the arbiter, and the processor.
+
+The channel stores elements -- it is just a Go channel.
+
+The arbiter determines if elements can be inserted. It is simply a function that returns a boolean.
+
+The processor consumes elements from the channel. Many processors can be running concurrently for each queue -- this is configurable through environment variables.
+
+The queues store "regioned strings" -- that is, strings associated with a Riot region (na, eu, etc.).
+
+** Match Queue Processing
+The match queue processor performs the following steps:
+
+1. Retrieve data from Riot API of game. /match
+2. Decode the JSON.
+3. Extract all summoners in the match.
+4. Perform league lookups on all summoners.
+5. Find the minimum league and division of the match.
+6. Re-encode the JSON to remove rando whitespace.
+7. Write the Cassandra row.
+8. Send all summoners in the game to the summoners arbiter.
+
+** Match Arbiter
+The match arbiter checks to see if the key exists in Cassandra. This could be optimized in the future to do multi-key reads, but let's worry about that later.
+
+** Summoner Queue Processing
+The summoner queue processor performs the following steps:
+
+1. Retrieve match history of summoner.
+2. Decode the JSON.
+3. Add all matches to the arbiter.
+
+It's much simpler.
+
+** Summoner Arbiter
+The summoner arbiter is an in-memory set. We could use Redis or something so the service can be restarted but I don't really see a point.
+
+** Execution
+In the beginning, the summoner queue is populated. It reads all keys from the league table in Cassandra and uses the union of this and the summoner name "AlbireoX". This will be a huge 50MB+ queue. may need to be rethought. This will run asynchronously.
+
+Then, the match and summoner queues are initialized, and their processors are run with the appropriate concurrencies.
+
+* Caveats
+
+** Why Cassandra?
+- We cannot have duplicate games. Since Cassandra is a K/V store, we can simply check if certain keys exist to make sure we don't need to scrape them.
+- We need to be able to pick games from certain leagues and divisions. Cassandra supports SQL-like WHERE statements.
+- We need to be able to store tens of terabytes of data. Cassandra can do this with replication, fast reads, and high reliability -- it is a database built for "big data".
+- We need Apache Spark integration, which Cassandra supports and no other Dynamo-based DB does.
+- Cassandra CRDT's should model time-series league data pretty well.
+- I've used it before, and it has a pretty solid reputation.
+
+** Why AWS?
+- We already know it.
+- Well-supported.
