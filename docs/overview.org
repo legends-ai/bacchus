@@ -69,6 +69,27 @@ We will have a two node Cassandra cluster running on AWS EC2 and EBS. These clus
 ** Riot API
 The Riot API will pool API keys given at a constant interval to deal with Riot's rate limiting.
 
+** League Lookups
+League lookups are also a bit complicated. It works like this:
+
+1. Fetch summoner league from Cassandra.
+2. If match occured after league lookup, do a Riot API league lookup.
+3. Append summoner league and new timestamp to doc if it changed.
+4. Return summoner league.
+
+Summoner leagues will be stored in a Cassandra table with a schema like so:
+
+#+BEGIN_SRC json
+{
+  name: string,
+  rank: [{
+    time: timestamp,
+    league: string,
+    division: string
+  }]
+}
+#+END_SRC
+
 * Caveats
 
 ** Why Cassandra?

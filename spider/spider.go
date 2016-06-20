@@ -3,6 +3,7 @@ package spider
 import (
 	"fmt"
 	"strconv"
+	"sync"
 
 	"github.com/simplyianm/gragas/structures"
 	"github.com/simplyianm/gragas/util"
@@ -15,52 +16,57 @@ const (
 
 // Spider represents a spider to search the riot API
 type Spider struct {
-	Riot        *riotclient.API
-	Games       *structures.Queue
-	Summoners   *structures.Queue
-	Concurrency int
+	Games        *structures.Queue
+	Summoners    *structures.Queue
+	Concurrency  int
+	clients      map[string]*riotclient.API
+	clientsMutex sync.Mutex
 }
 
 func Create(api *riotclient.API, concurrency int) *Spider {
 	return &Spider{
-		Riot:        api,
 		Games:       structures.NewQueue(),
 		Summoners:   structures.NewQueue(),
 		Concurrency: concurrency,
+		clients:     make(map[string]*riotclient.API),
 	}
 }
 
 // SeedSummoners seeds the summoners
-func (s *Spider) SeedSummoners(summonerIds []string) {
+func (s *Spider) SeedSummoners(summonerIds []string, region string) {
 	for _, summoner := range summonerIds {
-		s.Summoners.Offer(summoner)
+		s.Summoners.Offer(structures.RegionedString{summoner, region})
 	}
 }
 
 // SeedFromFeaturedGames seeds the spider with featured games summoners
-func (s *Spider) SeedFromFeaturedGames() error {
-	r, err := s.Riot.FeaturedGames()
+func (s *Spider) SeedFromFeaturedGames(region string) error {
+	r, err := s.riot(region).FeaturedGames()
 	if err != nil {
 		return fmt.Errorf("Could not get featured games: %v", err)
 	}
-	names := structures.NewStringSet()
+	names := structures.NewSet()
 	for _, g := range r.GameList {
 		for _, p := range g.Participants {
 			names.Add(p.SummonerName)
 		}
 	}
-	return s.seedSummonersByName(names.Values())
+	namesStrs := []string{}
+	for _, name := range names.Values() {
+		namesStrs = append(namesStrs, name.(string))
+	}
+	return s.seedSummonersByName(namesStrs, region)
 }
 
-func (s *Spider) seedSummonersByName(summoners []string) error {
+func (s *Spider) seedSummonersByName(summoners []string, region string) error {
 	chunks := util.Chunk(summoners, nameChunkSize)
 	for _, chunk := range chunks {
-		sum, err := s.Riot.SummonerByName(chunk)
+		sum, err := s.riot(region).SummonerByName(chunk)
 		if err != nil {
 			return err
 		}
 		for _, summoner := range sum {
-			s.Summoners.Offer(strconv.Itoa(summoner.ID))
+			s.Summoners.Offer(structures.RegionedString{strconv.Itoa(summoner.ID), region})
 		}
 	}
 	return nil
@@ -91,7 +97,7 @@ func (s *Spider) process() {
 	}
 }
 
-func (s *Spider) processGame(g string) {
+func (s *Spider) processGame(g RegionedString) {
 	s.Games.Start(g)
 	defer s.Games.Complete(g)
 	resp, err := s.Riot.Match(g)
@@ -117,4 +123,16 @@ func (s *Spider) processSummoner(summoner string) {
 	for _, g := range resp.Games {
 		s.Games.Offer(strconv.Itoa(g.GameID))
 	}
+}
+
+// riot retrieves the riot api client for the given region
+func (s *Spider) riot(region string) *riotclient.API {
+	s.clientsMutex.Lock()
+	defer s.clientsMutex.Unlock()
+	if client := s.clients[region]; client != nil {
+		return client
+	}
+	client := riotclient.New(region)
+	s.clients[region] = client
+	return client
 }

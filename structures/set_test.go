@@ -7,8 +7,8 @@ import (
 )
 
 // Integration test
-func TestStringSet(t *testing.T) {
-	set := NewStringSet()
+func TestSet(t *testing.T) {
+	set := NewSet()
 	set.Add("a")
 	assert.True(t, set.Has("a"))
 	assert.False(t, set.Has("b"))
