@@ -1,7 +1,7 @@
 #+TITLE: Gragas
 
 * Overview
-Gragas is a CLI tool that pulls match data from the Riot API and stores it in a data store that can be processed by Apache Spark on Elastic MapReduce.
+Gragas is a CLI tool written in Go that pulls match data from the Riot API and stores it in a data store that can be processed by Apache Spark on Elastic MapReduce.
 
 It spiders the Riot API and stores match and summoner league data in Cassandra tables. The data is to be further processed by a tool such as Apache Spark.
 
