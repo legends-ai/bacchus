@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Sirupsen/logrus"
 	"github.com/simplyianm/gragas/processor"
 	"github.com/simplyianm/gragas/riotclient"
 	"github.com/simplyianm/inject"
@@ -15,6 +16,10 @@ const (
 func main() {
 	injector := inject.New()
 	injector.Map(injector)
+
+	// Load logger
+	logger := logrus.New()
+	injector.Map(logger)
 
 	// Load config
 	cfg := config.Fetch()
