@@ -31,6 +31,7 @@ func NewMatches() *Matches {
 // Offer offers a match to the queue which may accept it.
 func (m *Matches) Offer(id MatchID) {
 	// if key exists in cassandra return
+	m.c <- id
 }
 
 // Start starts processing matches.
@@ -45,10 +46,10 @@ func (m *Matches) Start() {
 }
 
 func (m *Matches) process(id MatchID) {
-	region := s.Riot.Region(id.Region)
-	res, err := region.Match(strconv.Itoa(m.ID))
+	region := m.Riot.Region(id.Region)
+	res, err := region.Match(strconv.Itoa(id.ID))
 	if err != nil {
-		s.Logger.Errorf("Could not fetch details of matach %s in region %s: %v", id.ID, id.Region, err)
+		m.Logger.Errorf("Could not fetch details of matach %s in region %s: %v", id.ID, id.Region, err)
 		return
 	}
 	// TODO(simplyianm): actually do shit
