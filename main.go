@@ -1,10 +1,11 @@
 package main
 
 import (
-	"log"
-
-	"github.com/simplyianm/gragas/spider"
-	"github.com/simplyianm/riotclient"
+	"github.com/simplyianm/gragas/processor"
+	"github.com/simplyianm/gragas/riotclient"
+	"github.com/simplyianm/inject"
+	"github.com/simplyianm/keypool"
+	"github.com/simplyianm/riot/config"
 )
 
 const (
@@ -12,12 +13,34 @@ const (
 )
 
 func main() {
-	api := riotclient.Create("na")
-	s := spider.Create(api, 10)
-	if err := s.SeedFromFeaturedGames(); err != nil {
-		log.Fatalf("Cannot seed spider: %v", err)
-		return
+	injector := inject.New()
+	injector.Map(injector)
+
+	// Load config
+	cfg := config.Fetch()
+	injector.Map(cfg)
+
+	// Load keypool
+	keys := keypool.New(cfg.APIKeys, cfg.MaxRate)
+	injector.Map(keys)
+
+	// Create a client for Riot
+	injector.ApplyMap(riotclient.New())
+
+	// Load summoner and match processors
+	s := processor.NewSummoners()
+	injector.Map(s)
+	m := processor.NewMatches()
+	injector.ApplyMap(m)
+	injector.Apply(s)
+
+	// Start processing queues
+	for i := 0; i < concurrency; i++ {
+		go s.Start()
 	}
-	s.Start()
+	for i := 0; i < concurrency; i++ {
+		go m.Start()
+	}
+
 	select {}
 }
