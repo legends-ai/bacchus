@@ -49,15 +49,15 @@ func (s *Summoners) Start() {
 	}
 }
 
-func (s *Summoners) process(m SummonerID) {
-	res, err := s.Riot.Region(m.Region).Game(strconv.Itoa(m.ID))
+func (s *Summoners) process(id SummonerID) {
+	res, err := s.Riot.Region(id.Region).Game(strconv.Itoa(id.ID))
 	if err != nil {
-		s.Logger.Errorf("Could not fetch games of summoner %s in region %s: %v", m.ID, m.Region, err)
+		s.Logger.Errorf("Could not fetch games of summoner %s in region %s: %v", id.ID, id.Region, err)
 		return
 	}
 	for _, game := range res.Games {
 		s.Matches.Offer(MatchID{
-			Region: m.Region,
+			Region: id.Region,
 			ID:     game.GameID,
 		})
 	}

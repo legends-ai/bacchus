@@ -52,19 +52,20 @@ type API struct {
 	rc      *RiotClient
 }
 
-// fetchWithParams fetches a url with the given parameters.
-func (r *API) fetchWithParams(u string, params url.Values) (*http.Response, error) {
+// fetchWithParams fetches a path with the given parameters.
+func (r *API) fetchWithParams(path string, params url.Values) (*http.Response, error) {
 	key := r.rc.Keys.Fetch().Return()
 	params.Set(apiKeyParam, key)
-	return r.fetch(fmt.Sprintf("%s?%s", u, params.Encode()))
-}
-
-// fetch fetches a URL via GET request. Do not use.
-func (r *API) fetch(url string) (*http.Response, error) {
+	url := fmt.Sprintf("%s?%s", path, params.Encode())
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 	return client.Do(req)
+}
+
+// fetch fetches a path via GET request.
+func (r *API) fetch(path string) (*http.Response, error) {
+	return r.fetchWithParams(path, url.Values{})
 }
