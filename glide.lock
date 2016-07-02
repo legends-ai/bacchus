@@ -1,8 +1,18 @@
-hash: 839231202993ab99c79dfe71c7a87f03b276bb766f0be1b800f3d1a763efcd8a
-updated: 2016-06-02T22:56:00.203547413-04:00
+hash: 1266ee3527479682eb8bf6d0af3b5c05db5232305f53a93635976d7c50f9df73
+updated: 2016-07-01T22:10:56.575215317-05:00
 imports:
-- name: github.com/simplyianm/riotclient
-  version: 7dec5b365d5238f604f1ebee9ca79a406b94fb2b
-  repo: git@github.com:simplyianm/riotclient.git
-  vcs: git
+- name: github.com/gocql/gocql
+  version: b7b8a0e04b0cb0ca0b379421c58ec6fab9939b85
+- name: github.com/kelseyhightower/envconfig
+  version: 91921eb4cf999321cdbeebdba5a03555800d493b
+- name: github.com/simplyianm/inject
+  version: 0379a29944564e07e61ec76e59221b3f33f214d8
+- name: github.com/simplyianm/keypool
+  version: d288d6f31d1c32f9762645f96a616eba394c0de7
+- name: github.com/Sirupsen/logrus
+  version: f3cfb454f4c209e6668c95216c4744b8fddb2356
+- name: golang.org/x/sys
+  version: 62bee037599929a6e9146f29d10dd5208c43507d
+  subpackages:
+  - unix
 devImports: []

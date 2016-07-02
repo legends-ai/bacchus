@@ -2,11 +2,11 @@ package main
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/simplyianm/gragas/config"
 	"github.com/simplyianm/gragas/processor"
 	"github.com/simplyianm/gragas/riotclient"
 	"github.com/simplyianm/inject"
 	"github.com/simplyianm/keypool"
-	"github.com/simplyianm/riot/config"
 )
 
 const (

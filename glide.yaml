@@ -1,5 +1,5 @@
 package: github.com/simplyianm/gragas
 import:
-- package: github.com/simplyianm/riotclient
-  vcs: git
-  repo: git@github.com:simplyianm/riotclient.git
+- package: github.com/kelseyhightower/envconfig
+- package: github.com/gocql/gocql
+- package: github.com/simplyianm/keypool
