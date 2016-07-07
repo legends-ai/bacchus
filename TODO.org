@@ -1,10 +1,6 @@
 * Todos for Bacchus
 
-** TODO servicify
-Call HTTP endpoint to execute a scrape.
-
 ** TODO store stuff in Cassandra
-Easier than S3 + Redis
 
 ** TODO merge with League service
 
