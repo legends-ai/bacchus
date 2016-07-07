@@ -1,4 +1,4 @@
-package: github.com/simplyianm/gragas
+package: github.com/simplyianm/bacchus
 import:
 - package: github.com/kelseyhightower/envconfig
 - package: github.com/gocql/gocql

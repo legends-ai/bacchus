@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/simplyianm/gragas/riotclient"
+	"github.com/simplyianm/bacchus/riotclient"
 )
 
 // SummonerID identifies a summoner.

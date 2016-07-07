@@ -1,4 +1,4 @@
-* Todos for Gragas
+* Todos for Bacchus
 
 ** TODO servicify
 Call HTTP endpoint to execute a scrape.

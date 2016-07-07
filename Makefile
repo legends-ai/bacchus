@@ -4,10 +4,10 @@ build:
 	go build .
 
 clean:
-	rm gragas || :
+	rm bacchus || :
 
 test:
 	go test ./...
 
 serve: all
-	./gragas
+	./bacchus
