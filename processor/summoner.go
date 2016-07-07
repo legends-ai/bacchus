@@ -8,31 +8,25 @@ import (
 	"github.com/simplyianm/bacchus/riotclient"
 )
 
-// SummonerID identifies a summoner.
-type SummonerID struct {
-	Region string
-	ID     int
-}
-
 // Queues is the processor for queues.
 type Summoners struct {
 	Riot    *riotclient.RiotClient `inject:"t"`
 	Logger  logrus.Logger          `inject:"t"`
 	Matches *Matches               `inject:"t"`
-	c       chan SummonerID
-	exists  map[SummonerID]bool
+	c       chan db.SummonerID
+	exists  map[db.SummonerID]bool
 }
 
 // NewSummoners creates a new processor.Summoners.
 func NewSummoners() *Summoners {
 	return &Summoners{
-		c:      make(chan SummonerID),
-		exists: map[SummonerID]bool{},
+		c:      make(chan db.SummonerID),
+		exists: map[db.SummonerID]bool{},
 	}
 }
 
 // Offer offers a summoner to the queue which may accept it.
-func (s *Summoners) Offer(id SummonerID) {
+func (s *Summoners) Offer(id db.SummonerID) {
 	if s.exists[id] {
 		return
 	}
@@ -50,7 +44,7 @@ func (s *Summoners) Start() {
 	}
 }
 
-func (s *Summoners) process(id SummonerID) {
+func (s *Summoners) process(id db.SummonerID) {
 	res, err := s.Riot.Region(id.Region).Game(strconv.Itoa(id.ID))
 	if err != nil {
 		s.Logger.Errorf("Could not fetch games of summoner %s in region %s: %v", id.ID, id.Region, err)

@@ -5,6 +5,7 @@ import (
 	"github.com/simplyianm/bacchus/config"
 	"github.com/simplyianm/bacchus/db"
 	"github.com/simplyianm/bacchus/processor"
+	"github.com/simplyianm/bacchus/rank"
 	"github.com/simplyianm/bacchus/riotclient"
 	"github.com/simplyianm/inject"
 	"github.com/simplyianm/keypool"
@@ -36,6 +37,10 @@ func main() {
 		logger.Fatalf("Could not load Athena cluster: %v", err)
 	}
 	injector.Map(athena)
+
+	// Load lookup service
+	ls := &rank.LookupService{}
+	injector.ApplyMap(ls)
 
 	// Create a client for Riot
 	injector.ApplyMap(riotclient.New())

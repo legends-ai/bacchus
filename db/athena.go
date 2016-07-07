@@ -39,6 +39,17 @@ func (id MatchID) String() string {
 	return fmt.Sprintf("%s/%s", id.Region, id.ID)
 }
 
+// SummonerID identifies a summoner.
+type SummonerID struct {
+	Region string
+	ID     int
+}
+
+// String returns a string representation of this ID.
+func (id SummonerID) String() string {
+	return fmt.Sprintf("%s/%s", id.Region, id.ID)
+}
+
 // HasMatch returns true if a match exists.
 func (a *Athena) HasMatch(id MatchID) (bool, error) {
 	var count int

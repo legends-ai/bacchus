@@ -58,9 +58,9 @@ func (m *Matches) process(id db.MatchID) {
 		return
 	}
 	// TODO(simplyianm): actually do shit
-	var ids []SummonerID
+	var ids []db.SummonerID
 	for _, p := range res.ParticipantIdentities {
-		ids = append(ids, SummonerID{
+		ids = append(ids, db.SummonerID{
 			Region: id.Region,
 			ID:     p.Player.SummonerID,
 		})
