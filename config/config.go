@@ -23,6 +23,9 @@ type AppConfig struct {
 	// MaxRate is the maximum rate to make requests per key
 	// The default corresponds to 500 requests per 10 minutes.
 	MaxRate time.Duration `envconfig:"max_rate" default:"1200ms"`
+
+	// CassandraHosts is a list of Cassandra hosts.
+	CassandraHosts []string `envconfig:"cassandra_hosts" required:"true"`
 }
 
 // Fetch fetches the config from env vars
