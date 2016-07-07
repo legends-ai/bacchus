@@ -1,7 +1,6 @@
 package processor
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
@@ -9,35 +8,24 @@ import (
 	"github.com/simplyianm/bacchus/riotclient"
 )
 
-// MatchID identifies a match.
-type MatchID struct {
-	Region string
-	ID     int
-}
-
-// String returns a string representation of this ID.
-func (id MatchID) String() {
-	return fmt.Sprintf("%s/%s", id.Region, id.ID)
-}
-
 // Matches is the processor for matches.
 type Matches struct {
 	Riot      *riotclient.RiotClient `inject:"t"`
 	Logger    logrus.Logger          `inject:"t"`
 	Summoners *Summoners             `inject:"t"`
 	Athena    *db.Athena             `inject:"t"`
-	c         chan MatchID
+	c         chan db.MatchID
 }
 
 // NewMatches creates a new processor.Matches.
 func NewMatches() *Matches {
 	return &Matches{
-		c: make(chan MatchID),
+		c: make(chan db.MatchID),
 	}
 }
 
 // Offer offers a match to the queue which may accept it.
-func (m *Matches) Offer(id MatchID) {
+func (m *Matches) Offer(id db.MatchID) {
 	// if key exists in cassandra return
 	ok, err := m.Athena.HasMatch(id)
 	if err != nil {
@@ -62,7 +50,7 @@ func (m *Matches) Start() {
 	}
 }
 
-func (m *Matches) process(id MatchID) {
+func (m *Matches) process(id db.MatchID) {
 	region := m.Riot.Region(id.Region)
 	res, err := region.Match(strconv.Itoa(id.ID))
 	if err != nil {

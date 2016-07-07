@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/simplyianm/bacchus/db"
 	"github.com/simplyianm/bacchus/riotclient"
 )
 
@@ -56,7 +57,7 @@ func (s *Summoners) process(id SummonerID) {
 		return
 	}
 	for _, game := range res.Games {
-		s.Matches.Offer(MatchID{
+		s.Matches.Offer(db.MatchID{
 			Region: id.Region,
 			ID:     game.GameID,
 		})
