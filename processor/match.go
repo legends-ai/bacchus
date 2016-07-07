@@ -1,9 +1,11 @@
 package processor
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/simplyianm/bacchus/db"
 	"github.com/simplyianm/bacchus/riotclient"
 )
 
@@ -13,11 +15,17 @@ type MatchID struct {
 	ID     int
 }
 
+// String returns a string representation of this ID.
+func (id MatchID) String() {
+	return fmt.Sprintf("%s/%s", id.Region, id.ID)
+}
+
 // Matches is the processor for matches.
 type Matches struct {
 	Riot      *riotclient.RiotClient `inject:"t"`
 	Logger    logrus.Logger          `inject:"t"`
 	Summoners *Summoners             `inject:"t"`
+	Athena    *db.Athena             `inject:"t"`
 	c         chan MatchID
 }
 
@@ -31,6 +39,15 @@ func NewMatches() *Matches {
 // Offer offers a match to the queue which may accept it.
 func (m *Matches) Offer(id MatchID) {
 	// if key exists in cassandra return
+	ok, err := m.Athena.HasMatch(id)
+	if err != nil {
+		m.Logger.Warnf("Could not check match: %v", err)
+		return
+	}
+	if ok {
+		// don't scrape duplicate matches
+		return
+	}
 	m.c <- id
 }
 
