@@ -14,6 +14,7 @@ type Athena struct {
 // NewAthena creates a new Athena object from config
 func NewAthena(cfg *config.AppConfig) (*Athena, error) {
 	c := gocql.NewCluster(cfg.AthenaHosts...)
+	c.Keyspace = cfg.AthenaKeyspace
 	s, err := c.CreateSession()
 	if err != nil {
 		return nil, err
