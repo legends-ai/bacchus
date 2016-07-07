@@ -24,8 +24,11 @@ type AppConfig struct {
 	// The default corresponds to 500 requests per 10 minutes.
 	MaxRate time.Duration `envconfig:"max_rate" default:"1200ms"`
 
-	// CassandraHosts is a list of Cassandra hosts.
-	CassandraHosts []string `envconfig:"cassandra_hosts" required:"true"`
+	// AthenaHosts is a list of Athena Cassandra hosts.
+	AthenaHosts []string `envconfig:"athena_hosts" required:"true"`
+
+	// AthenaKeyspace is the Athena keyspace.
+	AthenaKeyspace string `envconfig:"athena_keyspace" default:"athena"`
 }
 
 // Fetch fetches the config from env vars

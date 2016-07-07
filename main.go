@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/simplyianm/bacchus/config"
+	"github.com/simplyianm/bacchus/db"
 	"github.com/simplyianm/bacchus/processor"
 	"github.com/simplyianm/bacchus/riotclient"
 	"github.com/simplyianm/inject"
@@ -28,6 +29,13 @@ func main() {
 	// Load keypool
 	keys := keypool.New(cfg.APIKeys, cfg.MaxRate)
 	injector.Map(keys)
+
+	// Load Cassandra cluster
+	athena, err := db.NewAthena(cfg)
+	if err != nil {
+		logger.Fatalf("Could not load Athena cluster: %v", err)
+	}
+	injector.Map(athena)
 
 	// Create a client for Riot
 	injector.ApplyMap(riotclient.New())
