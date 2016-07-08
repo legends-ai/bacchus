@@ -42,13 +42,13 @@ func (id MatchID) String() string {
 
 // Rank represents a rank.
 type Rank struct {
-	Division uint32
-	Tier     uint32
+	Division uint16
+	Tier     uint16
 }
 
 // ToNumber returns a numerical representation of rank that can be sorted.
-func (r *Rank) ToNumber() uint64 {
-	return uint64(r.Tier)<<32 | uint64(r.Division)
+func (r *Rank) ToNumber() uint32 {
+	return uint32(r.Tier)<<16 | uint32(r.Division)
 }
 
 // SummonerID identifies a summoner.
