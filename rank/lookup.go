@@ -35,7 +35,7 @@ func (ls *LookupService) Lookup(ids []db.SummonerID) map[db.SummonerID]db.Rank {
 // MinRank gets the minimum rank of the given summoners.
 func (ls *LookupService) MinRank(ids []db.SummonerID) db.Rank {
 	res := ls.Lookup(ids)
-	min := db.Rank{1E9, 1E9}
+	min := db.Rank{1<<16 - 1, 1<<16 - 1}
 	for _, rank := range res {
 		if rank.Tier > min.Tier {
 			continue

@@ -81,7 +81,8 @@ func (a *Athena) WriteMatch(m *Match) error {
 
 // Match represents a match.
 type Match struct {
-	ID   MatchID
-	Body string
-	Rank Rank
+	ID    MatchID
+	Body  string
+	Patch string
+	Rank  Rank
 }

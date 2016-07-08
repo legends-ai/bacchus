@@ -83,9 +83,10 @@ func (m *Matches) process(id db.MatchID) {
 
 	// Write match to Cassandra
 	m.Athena.WriteMatch(&db.Match{
-		ID:   id,
-		Body: json,
-		Rank: rank,
+		ID:    id,
+		Body:  json,
+		Patch: res.MatchVersion,
+		Rank:  rank,
 	})
 }
 

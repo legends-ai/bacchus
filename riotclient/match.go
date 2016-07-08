@@ -9,6 +9,7 @@ import (
 // MatchResponse is the match response
 type MatchResponse struct {
 	ParticipantIdentities []ParticipantIdentity `json:"participantIdentities"`
+	MatchVersion          string                `json:"matchVersion"`
 	RawJSON               string                `json:"-"`
 }
 
