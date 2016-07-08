@@ -36,8 +36,13 @@ type MatchID struct {
 
 // Rank represents a rank.
 type Rank struct {
-	Division int
-	Tier     int
+	Division uint32
+	Tier     uint32
+}
+
+// ToNumber returns a numerical representation of rank that can be sorted.
+func (r *Rank) ToNumber() uint64 {
+	return uint64(r.Tier)<<32 | uint64(r.Division)
 }
 
 // String returns a string representation of this ID.
