@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/simplyianm/bacchus/db"
+	"github.com/simplyianm/bacchus/models"
 	"github.com/simplyianm/bacchus/riotclient"
 )
 
@@ -13,20 +13,20 @@ type Summoners struct {
 	Riot    *riotclient.RiotClient `inject:"t"`
 	Logger  logrus.Logger          `inject:"t"`
 	Matches *Matches               `inject:"t"`
-	c       chan db.SummonerID
-	exists  map[db.SummonerID]bool
+	c       chan models.SummonerID
+	exists  map[models.SummonerID]bool
 }
 
 // NewSummoners creates a new processor.Summoners.
 func NewSummoners() *Summoners {
 	return &Summoners{
-		c:      make(chan db.SummonerID),
-		exists: map[db.SummonerID]bool{},
+		c:      make(chan models.SummonerID),
+		exists: map[models.SummonerID]bool{},
 	}
 }
 
 // Offer offers a summoner to the queue which may accept it.
-func (s *Summoners) Offer(id db.SummonerID) {
+func (s *Summoners) Offer(id models.SummonerID) {
 	if s.exists[id] {
 		return
 	}
@@ -44,14 +44,14 @@ func (s *Summoners) Start() {
 	}
 }
 
-func (s *Summoners) process(id db.SummonerID) {
+func (s *Summoners) process(id models.SummonerID) {
 	res, err := s.Riot.Region(id.Region).Game(strconv.Itoa(id.ID))
 	if err != nil {
 		s.Logger.Errorf("Could not fetch games of summoner %s in region %s: %v", id.ID, id.Region, err)
 		return
 	}
 	for _, game := range res.Games {
-		s.Matches.Offer(db.MatchID{
+		s.Matches.Offer(models.MatchID{
 			Region: id.Region,
 			ID:     game.GameID,
 		})

@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/simplyianm/bacchus/db"
+	"github.com/simplyianm/bacchus/models"
 	"github.com/simplyianm/bacchus/riotclient"
 )
 
@@ -15,10 +15,10 @@ type LookupService struct {
 }
 
 // Lookup looks up the given ids and returns a rank.
-func (ls *LookupService) Lookup(ids []db.SummonerID) map[db.SummonerID]db.Rank {
+func (ls *LookupService) Lookup(ids []models.SummonerID) map[models.SummonerID]models.Rank {
 	var mu sync.Mutex
 	var wg sync.WaitGroup
-	ret := map[db.SummonerID]db.Rank{}
+	ret := map[models.SummonerID]models.Rank{}
 	wg.Add(len(ids))
 	for _, id := range ids {
 		// Asynchronously look up all summoners
@@ -33,9 +33,9 @@ func (ls *LookupService) Lookup(ids []db.SummonerID) map[db.SummonerID]db.Rank {
 }
 
 // MinRank gets the minimum rank of the given summoners.
-func (ls *LookupService) MinRank(ids []db.SummonerID) db.Rank {
+func (ls *LookupService) MinRank(ids []models.SummonerID) models.Rank {
 	res := ls.Lookup(ids)
-	min := db.Rank{1<<16 - 1, 1<<16 - 1}
+	min := models.Rank{1<<16 - 1, 1<<16 - 1}
 	for _, rank := range res {
 		if rank.Tier > min.Tier {
 			continue
@@ -48,7 +48,7 @@ func (ls *LookupService) MinRank(ids []db.SummonerID) db.Rank {
 	return min
 }
 
-func lookup(id db.SummonerID) db.Rank {
+func lookup(id models.SummonerID) models.Rank {
 	// TODO(simplyianm): implement
-	return db.Rank{}
+	return models.Rank{}
 }

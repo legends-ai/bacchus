@@ -6,6 +6,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/simplyianm/bacchus/db"
+	"github.com/simplyianm/bacchus/models"
 	"github.com/simplyianm/bacchus/rank"
 	"github.com/simplyianm/bacchus/riotclient"
 )
@@ -17,18 +18,18 @@ type Matches struct {
 	Summoners *Summoners             `inject:"t"`
 	Athena    *db.Athena             `inject:"t"`
 	Ranks     *rank.LookupService    `inject:"t"`
-	c         chan db.MatchID
+	c         chan models.MatchID
 }
 
 // NewMatches creates a new processor.Matches.
 func NewMatches() *Matches {
 	return &Matches{
-		c: make(chan db.MatchID),
+		c: make(chan models.MatchID),
 	}
 }
 
 // Offer offers a match to the queue which may accept it.
-func (m *Matches) Offer(id db.MatchID) {
+func (m *Matches) Offer(id models.MatchID) {
 	// if key exists in cassandra return
 	ok, err := m.Athena.HasMatch(id)
 	if err != nil {
@@ -53,7 +54,7 @@ func (m *Matches) Start() {
 	}
 }
 
-func (m *Matches) process(id db.MatchID) {
+func (m *Matches) process(id models.MatchID) {
 	region := m.Riot.Region(id.Region)
 
 	// Retrieve match data
@@ -64,9 +65,9 @@ func (m *Matches) process(id db.MatchID) {
 	}
 
 	// Fetch summoners from match
-	var ids []db.SummonerID
+	var ids []models.SummonerID
 	for _, p := range res.ParticipantIdentities {
-		ids = append(ids, db.SummonerID{
+		ids = append(ids, models.SummonerID{
 			Region: id.Region,
 			ID:     p.Player.SummonerID,
 		})
@@ -82,7 +83,7 @@ func (m *Matches) process(id db.MatchID) {
 	}
 
 	// Write match to Cassandra
-	m.Athena.WriteMatch(&db.Match{
+	m.Athena.WriteMatch(&models.Match{
 		ID:    id,
 		Body:  json,
 		Patch: res.MatchVersion,
