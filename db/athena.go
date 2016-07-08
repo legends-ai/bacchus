@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	hasMatchQuery = `SELECT COUNT(*) FROM matches WHERE id = ?`
+	hasMatchQuery    = `SELECT COUNT(*) FROM matches WHERE id = ?`
+	insertMatchQuery = `INSERT INTO matches (id, match_id, region, body, rank) VALUES (?, ?, ?, ?, ?)`
 )
 
 // Athena is the athena cluster
@@ -34,6 +35,11 @@ type MatchID struct {
 	ID     int
 }
 
+// String returns a string representation of this ID.
+func (id MatchID) String() string {
+	return fmt.Sprintf("%s/%s", id.Region, id.ID)
+}
+
 // Rank represents a rank.
 type Rank struct {
 	Division uint32
@@ -43,11 +49,6 @@ type Rank struct {
 // ToNumber returns a numerical representation of rank that can be sorted.
 func (r *Rank) ToNumber() uint64 {
 	return uint64(r.Tier)<<32 | uint64(r.Division)
-}
-
-// String returns a string representation of this ID.
-func (id MatchID) String() string {
-	return fmt.Sprintf("%s/%s", id.Region, id.ID)
 }
 
 // SummonerID identifies a summoner.
@@ -72,8 +73,10 @@ func (a *Athena) HasMatch(id MatchID) (bool, error) {
 
 // WriteMatch writes a match to Cassandra.
 func (a *Athena) WriteMatch(m *Match) error {
-	// TODO(igm): write match
-	return nil
+	return a.Session.Query(
+		insertMatchQuery, m.ID.String(),
+		m.ID.ID, m.ID.Region, m.Body, m.Rank.ToNumber(),
+	).Exec()
 }
 
 // Match represents a match.
