@@ -1,10 +1,12 @@
 package processor
 
 import (
+	"encoding/json"
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/simplyianm/bacchus/db"
+	"github.com/simplyianm/bacchus/rank"
 	"github.com/simplyianm/bacchus/riotclient"
 )
 
@@ -14,6 +16,7 @@ type Matches struct {
 	Logger    logrus.Logger          `inject:"t"`
 	Summoners *Summoners             `inject:"t"`
 	Athena    *db.Athena             `inject:"t"`
+	Ranks     *rank.LookupService    `inject:"t"`
 	c         chan db.MatchID
 }
 
@@ -52,12 +55,15 @@ func (m *Matches) Start() {
 
 func (m *Matches) process(id db.MatchID) {
 	region := m.Riot.Region(id.Region)
+
+	// Retrieve match data
 	res, err := region.Match(strconv.Itoa(id.ID))
 	if err != nil {
-		m.Logger.Errorf("Could not fetch details of matach %s in region %s: %v", id.ID, id.Region, err)
+		m.Logger.Errorf("Could not fetch details of match %s in region %s: %v", id.ID, id.Region, err)
 		return
 	}
-	// TODO(simplyianm): actually do shit
+
+	// Fetch summoners from match
 	var ids []db.SummonerID
 	for _, p := range res.ParticipantIdentities {
 		ids = append(ids, db.SummonerID{
@@ -65,4 +71,32 @@ func (m *Matches) process(id db.MatchID) {
 			ID:     p.Player.SummonerID,
 		})
 	}
+
+	// Get min rank of players
+	rank := m.Ranks.MinRank(ids)
+
+	// Minify JSON
+	json, err := m.minifyJSON(res.RawJSON)
+	if err != nil {
+		m.Logger.Errorf("Could not minify Riot JSON: %v", err)
+	}
+
+	// Write match to Cassandra
+	m.Athena.WriteMatch(&db.Match{
+		ID:   id,
+		Body: json,
+		Rank: rank,
+	})
+}
+
+func (m *Matches) minifyJSON(data string) (string, error) {
+	var min interface{}
+	if err := json.Unmarshal([]byte(data), &min); err != nil {
+		return "", err
+	}
+	d, err := json.Marshal(min)
+	if err != nil {
+		return "", err
+	}
+	return string(d), nil
 }

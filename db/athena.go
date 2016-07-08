@@ -34,6 +34,12 @@ type MatchID struct {
 	ID     int
 }
 
+// Rank represents a rank.
+type Rank struct {
+	Division int
+	Tier     int
+}
+
 // String returns a string representation of this ID.
 func (id MatchID) String() string {
 	return fmt.Sprintf("%s/%s", id.Region, id.ID)
@@ -57,4 +63,17 @@ func (a *Athena) HasMatch(id MatchID) (bool, error) {
 		return false, err
 	}
 	return count != 0, nil
+}
+
+// WriteMatch writes a match to Cassandra.
+func (a *Athena) WriteMatch(m *Match) error {
+	// TODO(igm): write match
+	return nil
+}
+
+// Match represents a match.
+type Match struct {
+	ID   MatchID
+	Body string
+	Rank Rank
 }

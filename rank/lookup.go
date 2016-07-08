@@ -8,12 +8,6 @@ import (
 	"github.com/simplyianm/bacchus/riotclient"
 )
 
-// Rank represents a rank.
-type Rank struct {
-	Division int
-	Tier     int
-}
-
 // LookupService looks things up.
 type LookupService struct {
 	Riot   *riotclient.RiotClient `inject:"t"`
@@ -21,10 +15,10 @@ type LookupService struct {
 }
 
 // Lookup looks up the given ids and returns a rank.
-func (ls *LookupService) Lookup(ids []db.SummonerID) map[db.SummonerID]Rank {
+func (ls *LookupService) Lookup(ids []db.SummonerID) map[db.SummonerID]db.Rank {
 	var mu sync.Mutex
 	var wg sync.WaitGroup
-	ret := map[db.SummonerID]Rank{}
+	ret := map[db.SummonerID]db.Rank{}
 	wg.Add(len(ids))
 	for _, id := range ids {
 		// Asynchronously look up all summoners
@@ -38,7 +32,23 @@ func (ls *LookupService) Lookup(ids []db.SummonerID) map[db.SummonerID]Rank {
 	return ret
 }
 
-func lookup(id db.SummonerID) Rank {
+// MinRank gets the minimum rank of the given summoners.
+func (ls *LookupService) MinRank(ids []db.SummonerID) db.Rank {
+	res := ls.Lookup(ids)
+	min := db.Rank{1E9, 1E9}
+	for _, rank := range res {
+		if rank.Tier > min.Tier {
+			continue
+		}
+		if rank.Division > min.Division {
+			continue
+		}
+		min = rank
+	}
+	return min
+}
+
+func lookup(id db.SummonerID) db.Rank {
 	// TODO(simplyianm): implement
-	return Rank{}
+	return db.Rank{}
 }
