@@ -7,6 +7,6 @@ type Rank struct {
 }
 
 // ToNumber returns a numerical representation of rank that can be sorted.
-func (r *Rank) ToNumber() uint32 {
+func (r Rank) ToNumber() uint32 {
 	return uint32(r.Tier)<<16 | uint32(r.Division)
 }
