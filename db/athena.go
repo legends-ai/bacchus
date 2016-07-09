@@ -2,6 +2,8 @@
 package db
 
 import (
+	"time"
+
 	"github.com/gocql/gocql"
 	"github.com/simplyianm/bacchus/config"
 	"github.com/simplyianm/bacchus/models"
@@ -10,6 +12,7 @@ import (
 const (
 	hasMatchQuery    = `SELECT COUNT(*) FROM matches WHERE id = ?`
 	insertMatchQuery = `INSERT INTO matches (id, match_id, region, body, rank) VALUES (?, ?, ?, ?, ?)`
+	rankingsQuery    = `SELECT rankings FROM rankings WHERE id = ?`
 )
 
 // Athena is the athena cluster
@@ -43,4 +46,23 @@ func (a *Athena) WriteMatch(m *models.Match) error {
 		insertMatchQuery, m.ID.String(),
 		m.ID.ID, m.ID.Region, m.Body, m.Rank.ToNumber(),
 	).Exec()
+}
+
+// Rankings grabs all rankings of a summoner.
+func (a *Athena) Rankings(id models.SummonerID) (*models.RankingList, error) {
+	var rankings []struct {
+		Time time.Time
+		Rank int64
+	}
+	if err := a.Session.Query(rankingsQuery, id.String()).Scan(&rankings); err != nil {
+		return nil, err
+	}
+	var ret []*models.Ranking
+	for _, ranking := range rankings {
+		ret = append(ret, &models.Ranking{
+			Time: ranking.Time,
+			Rank: models.RankFromNumber(uint32(ranking.Rank)),
+		})
+	}
+	return &models.RankingList{ret}, nil
 }

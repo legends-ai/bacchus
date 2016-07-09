@@ -2,8 +2,11 @@ package rank
 
 import (
 	"sync"
+	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/simplyianm/bacchus/config"
+	"github.com/simplyianm/bacchus/db"
 	"github.com/simplyianm/bacchus/models"
 	"github.com/simplyianm/bacchus/riotclient"
 )
@@ -12,6 +15,8 @@ import (
 type LookupService struct {
 	Riot   *riotclient.RiotClient `inject:"t"`
 	Logger logrus.Logger          `inject:"t"`
+	Athena *db.Athena             `inject:"t"`
+	Config *config.AppConfig      `inject:"t"`
 }
 
 // Lookup looks up the given ids and returns a rank.
@@ -23,9 +28,12 @@ func (ls *LookupService) Lookup(ids []models.SummonerID) map[models.SummonerID]m
 	for _, id := range ids {
 		// Asynchronously look up all summoners
 		go func() {
-			rank := lookup(id)
+			rank, err := ls.lookup(id)
+			if err != nil {
+				ls.Logger.Errorf("Error looking up rank: %v", err)
+			}
 			mu.Lock()
-			ret[id] = rank
+			ret[id] = *rank
 			mu.Unlock()
 		}()
 	}
@@ -48,7 +56,17 @@ func (ls *LookupService) MinRank(ids []models.SummonerID) models.Rank {
 	return min
 }
 
-func lookup(id models.SummonerID) models.Rank {
-	// TODO(simplyianm): implement
-	return models.Rank{}
+func (ls *LookupService) lookup(id models.SummonerID) (*models.Rank, error) {
+	// check cassandra cache
+	res, err := ls.Athena.Rankings(id)
+	if err != nil {
+		return nil, err
+	}
+	latest := res.Latest()
+	if latest != nil && time.Now().Sub(latest.Time) < ls.Config.RankExpiry {
+		// TODO(igm): check timestamp on result
+		return &latest.Rank, nil
+	}
+	// lookup true rank and update
+	return &models.Rank{}, nil
 }

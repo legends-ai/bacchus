@@ -29,6 +29,9 @@ type AppConfig struct {
 
 	// AthenaKeyspace is the Athena keyspace.
 	AthenaKeyspace string `envconfig:"athena_keyspace" default:"athena"`
+
+	// RankExpiry is the max duration since a rank is valid.
+	RankExpiry time.Duration `envconfig:"rank_expiry" default:"168h"`
 }
 
 // Fetch fetches the config from env vars

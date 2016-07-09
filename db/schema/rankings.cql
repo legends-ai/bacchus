@@ -4,13 +4,13 @@ CREATE TYPE IF NOT EXISTS athena.ranking (
   rank bigint
 )
 
--- matches stores all match data.
-CREATE TABLE athena.ranks (
+-- rankings stores all rankings.
+CREATE TABLE athena.rankings (
   -- id is the summoner id.
   id text,
 
   -- ranks is a series of rankings throughout time.
-  set<athena.ranking> ranks,
+  set<athena.ranking> rankings,
 
   PRIMARY KEY(id)
 )
