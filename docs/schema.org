@@ -32,7 +32,7 @@ We may have to prune the rankings table every so often.
 #+BEGIN_SRC cql
 CREATE TABLE IF NOT EXISTS athena.rankings (
   id text,
-  set<athena.ranking> rankings,
+  rankings set<athena.ranking>,
   PRIMARY KEY(id)
 );
 #+END_SRC
