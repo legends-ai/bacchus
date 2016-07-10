@@ -64,6 +64,11 @@ func (m *Matches) process(id models.MatchID) {
 		return
 	}
 
+	// Ignore non-ranked
+	if res.QueueType != "RANKED_SOLO_5X5" && res.QueueType != "RANKED_PREMADE_5X5" {
+		return
+	}
+
 	// Fetch summoners from match
 	var ids []models.SummonerID
 	for _, p := range res.ParticipantIdentities {
@@ -74,7 +79,7 @@ func (m *Matches) process(id models.MatchID) {
 	}
 
 	// Get min rank of players
-	rank := m.Ranks.MinRank(ids)
+	rank := m.Ranks.MinRank(ids, res.Time())
 
 	// Minify JSON
 	json, err := m.minifyJSON(res.RawJSON)
