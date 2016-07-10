@@ -65,7 +65,7 @@ func (m *Matches) process(id models.MatchID) {
 	}
 
 	// Ignore non-ranked
-	if res.QueueType != "RANKED_SOLO_5X5" && res.QueueType != "RANKED_PREMADE_5X5" {
+	if res.QueueType != riotclient.QueueSolo5x5 && res.QueueType != riotclient.QueuePremade5x5 {
 		return
 	}
 

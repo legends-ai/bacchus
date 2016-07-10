@@ -58,18 +58,40 @@ func (ls *LookupService) MinRank(ids []models.SummonerID, t time.Time) models.Ra
 
 func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank, error) {
 	// check cassandra cache
+	rank, err := ls.lookupCassandra(id, t)
+	if err != nil {
+		return nil, err
+	}
+	if rank != nil {
+		return rank, nil
+	}
+	// not in cassandra, do api lookup
+	r := ls.Riot.Region(id.Region)
+	// TODO(igm): batch id lookups. we can fit a lot of these in a URI.
+	res, err := r.League([]string{id.ID})
+	if err != nil {
+		return nil, err
+	}
+	// TODO league lookup
+	return nil, nil
+}
+
+// lookupCassandra looks up the summoner rank in Cassandra.
+func (ls *LookupService) lookupCassandra(id models.SummonerID, t time.Time) (*models.Rank, error) {
+	// check cassandra cache
 	res, err := ls.Athena.Rankings(id)
 	if err != nil {
 		return nil, err
 	}
 	ranking := res.AtTime(t)
-	if ranking == res.Latest() {
-
+	if ranking == nil {
+		return nil, nil
 	}
-	if ranking != nil {
-		// TODO(igm): check timestamp on result
+	if ranking != res.Latest() {
 		return &ranking.Rank, nil
 	}
-	// lookup true rank and update
-	return &models.Rank{}, nil
+	if time.Now().Sub(ranking.Time) < ls.Config.RankExpiry {
+		return &ranking.Rank, nil
+	}
+	return nil
 }
