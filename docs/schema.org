@@ -1,0 +1,66 @@
+#+TITLE: Database schema
+
+* Athena
+
+** Keyspace
+Athena keyspace.
+
+*** Dev
+Replication factor of 1 since we're local.
+
+#+BEGIN_SRC cql
+CREATE KEYSPACE athena WITH REPLICATION = { 'class': 'SimpleStrategy', 'replication_factor': 1 };
+#+END_SRC
+
+** Ranking
+Represents a rank and a time the rank was fetched.
+
+Rank is calculated via tier<<16 | division.
+
+#+BEGIN_SRC cql
+CREATE TYPE IF NOT EXISTS athena.ranking (
+  time timestamp,
+  rank bigint
+);
+#+END_SRC
+
+** Rankings Table
+Rankings maps summoner id to a set of rankings.
+
+We may have to prune the rankings table every so often.
+
+#+BEGIN_SRC cql
+CREATE TABLE IF NOT EXISTS athena.rankings (
+  id text,
+  set<athena.ranking> rankings,
+  PRIMARY KEY(id)
+);
+#+END_SRC
+
+** Matches Table
+Matches stores all match data.
+
+#+BEGIN_SRC cql
+CREATE TABLE athena.matches (
+  -- id is the combined identifier of the match.
+  id text,
+
+  -- match_id is the Riot match id
+  match_id int,
+
+  -- region is the region (e.g NA)
+  region text,
+
+  -- body is the entire response returned from Riot.
+  body text,
+
+  -- rank is a bigint derived from division and tier.
+  rank bigint,
+
+  -- patch is the patch this game happened on.
+  patch text,
+
+  -- Cluster by patch and rank to allow sorting
+  PRIMARY KEY((id, patch), rank)
+)
+#+END_SRC
