@@ -64,5 +64,5 @@ func (a *Athena) Rankings(id models.SummonerID) (*models.RankingList, error) {
 			Rank: models.RankFromNumber(uint32(ranking.Rank)),
 		})
 	}
-	return &models.RankingList{ret}, nil
+	return models.NewRankingList(ret), nil
 }
