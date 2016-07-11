@@ -45,6 +45,7 @@ func (s *Summoners) Start() {
 }
 
 func (s *Summoners) process(id models.SummonerID) {
+	s.Logger.Info("Processing summoner %s", id.String())
 	res, err := s.Riot.Region(id.Region).Game(strconv.Itoa(id.ID))
 	if err != nil {
 		s.Logger.Errorf("Could not fetch games of summoner %s in region %s: %v", id.ID, id.Region, err)

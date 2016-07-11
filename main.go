@@ -4,6 +4,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/simplyianm/bacchus/config"
 	"github.com/simplyianm/bacchus/db"
+	"github.com/simplyianm/bacchus/models"
 	"github.com/simplyianm/bacchus/processor"
 	"github.com/simplyianm/bacchus/rank"
 	"github.com/simplyianm/bacchus/riotclient"
@@ -63,6 +64,9 @@ func main() {
 		logger.Infof("Starting match processor %d", i)
 		go m.Start()
 	}
+
+	// Offer Aditi
+	s.Offer(models.SummonerID{"na", 32875076})
 
 	select {}
 }
