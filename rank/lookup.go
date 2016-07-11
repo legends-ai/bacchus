@@ -27,8 +27,9 @@ func (ls *LookupService) Lookup(ids []models.SummonerID, t time.Time) map[models
 	var wg sync.WaitGroup
 	ret := map[models.SummonerID]models.Rank{}
 	wg.Add(len(ids))
-	for _, id := range ids {
+	for _, idTemp := range ids {
 		// Asynchronously look up all summoners
+		id := idTemp
 		go func() {
 			rank, err := ls.lookup(id, t)
 			if err != nil {
@@ -117,7 +118,7 @@ func (ls *LookupService) lookupCassandra(id models.SummonerID, t time.Time) (*mo
 	// check cassandra cache
 	res, err := ls.Athena.Rankings(id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not lookup Cassandra: %v", err)
 	}
 	ranking := res.AtTime(t)
 	if ranking == nil {

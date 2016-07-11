@@ -56,7 +56,7 @@ func (a *Athena) Rankings(id models.SummonerID) (*models.RankingList, error) {
 		Time time.Time
 		Rank int64
 	}
-	if err := a.Session.Query(rankingsQuery, id.String()).Scan(&rankings); err != nil {
+	if err := a.Session.Query(rankingsQuery, id.String()).Scan(&rankings); err != nil && err != gocql.ErrNotFound {
 		return nil, err
 	}
 	var ret []*models.Ranking
