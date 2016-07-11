@@ -1,6 +1,7 @@
 package rank
 
 import (
+	"strconv"
 	"sync"
 	"time"
 
@@ -68,7 +69,7 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 	// not in cassandra, do api lookup
 	r := ls.Riot.Region(id.Region)
 	// TODO(igm): batch id lookups. we can fit a lot of these in a URI.
-	res, err := r.League([]string{id.ID})
+	res, err := r.League([]string{strconv.Itoa(id.ID)})
 	if err != nil {
 		return nil, err
 	}
@@ -87,10 +88,7 @@ func (ls *LookupService) lookupCassandra(id models.SummonerID, t time.Time) (*mo
 	if ranking == nil {
 		return nil, nil
 	}
-	if ranking != res.Latest() {
-		return &ranking.Rank, nil
-	}
-	if time.Now().Sub(ranking.Time) < ls.Config.RankExpiry {
+	if ranking != res.Latest() || time.Now().Sub(ranking.Time) < ls.Config.RankExpiry {
 		return &ranking.Rank, nil
 	}
 	return nil
