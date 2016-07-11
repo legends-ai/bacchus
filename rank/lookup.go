@@ -29,7 +29,7 @@ func (ls *LookupService) Lookup(ids []models.SummonerID, t time.Time) map[models
 	wg.Add(len(ids))
 	for _, id := range ids {
 		// Asynchronously look up all summoners
-		go func(id string) {
+		go func(id models.SummonerID) {
 			rank, err := ls.lookup(id, t)
 			if err != nil {
 				ls.Logger.Errorf("Error looking up rank: %v", err)
