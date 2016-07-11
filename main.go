@@ -32,6 +32,7 @@ func main() {
 	injector.Map(keys)
 
 	// Load Cassandra cluster
+	logger.Info("Connecting to Athena Cassandra")
 	athena, err := db.NewAthena(cfg)
 	if err != nil {
 		logger.Fatalf("Could not load Athena cluster: %v", err)
@@ -46,6 +47,7 @@ func main() {
 	injector.ApplyMap(riotclient.New())
 
 	// Load summoner and match processors
+	logger.Info("Loading procesors")
 	s := processor.NewSummoners()
 	injector.Map(s)
 	m := processor.NewMatches()
@@ -54,9 +56,11 @@ func main() {
 
 	// Start processing queues
 	for i := 0; i < concurrency; i++ {
+		logger.Infof("Starting summoner processor %d", i)
 		go s.Start()
 	}
 	for i := 0; i < concurrency; i++ {
+		logger.Infof("Starting match processor %d", i)
 		go m.Start()
 	}
 
