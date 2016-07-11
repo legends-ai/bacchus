@@ -10,5 +10,5 @@ type MatchID struct {
 
 // String returns a string representation of this ID.
 func (id MatchID) String() string {
-	return fmt.Sprintf("%s/%s", id.Region, id.ID)
+	return fmt.Sprintf("%s/%d", id.Region, id.ID)
 }

@@ -55,7 +55,7 @@ func (m *Matches) Start() {
 }
 
 func (m *Matches) process(id models.MatchID) {
-	m.Logger.Info("Processing match %s", id.String())
+	m.Logger.Infof("Processing match %s", id.String())
 	region := m.Riot.Region(id.Region)
 
 	// Retrieve match data
