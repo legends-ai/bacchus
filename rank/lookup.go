@@ -27,10 +27,9 @@ func (ls *LookupService) Lookup(ids []models.SummonerID, t time.Time) map[models
 	var wg sync.WaitGroup
 	ret := map[models.SummonerID]models.Rank{}
 	wg.Add(len(ids))
-	for _, idTemp := range ids {
+	for _, id := range ids {
 		// Asynchronously look up all summoners
-		id := idTemp
-		go func() {
+		go func(id string) {
 			rank, err := ls.lookup(id, t)
 			if err != nil {
 				ls.Logger.Errorf("Error looking up rank: %v", err)
@@ -38,7 +37,7 @@ func (ls *LookupService) Lookup(ids []models.SummonerID, t time.Time) map[models
 			mu.Lock()
 			ret[id] = *rank
 			mu.Unlock()
-		}()
+		}(id)
 	}
 	return ret
 }
