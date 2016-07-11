@@ -1,9 +1,8 @@
-CREATE TABLE athena.matches (
+CREATE TABLE IF NOT EXISTS athena.matches (
   id text,
-  match_id int,
   region text,
   body text,
   rank bigint,
   patch text,
-  PRIMARY KEY((id, patch), rank)
+  PRIMARY KEY(id, rank)
 );
