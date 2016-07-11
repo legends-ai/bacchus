@@ -12,7 +12,7 @@ import (
 const (
 	keyspace         = "athena"
 	hasMatchQuery    = `SELECT COUNT(*) FROM matches WHERE id = ?`
-	insertMatchQuery = `INSERT INTO matches (id, match_id, region, body, rank) VALUES (?, ?, ?, ?, ?)`
+	insertMatchQuery = `INSERT INTO matches (id, region, body, rank, patch) VALUES (?, ?, ?, ?, ?)`
 	rankingsQuery    = `SELECT rankings FROM rankings WHERE id = ?`
 )
 
@@ -45,8 +45,8 @@ func (a *Athena) HasMatch(id models.MatchID) (bool, error) {
 // WriteMatch writes a match to Cassandra.
 func (a *Athena) WriteMatch(m *models.Match) error {
 	return a.Session.Query(
-		insertMatchQuery, m.ID.String(),
-		m.ID.ID, m.ID.Region, m.Body, m.Rank.ToNumber(),
+		insertMatchQuery, m.ID.String(), m.ID.Region,
+		m.Body, m.Rank.ToNumber(), m.Patch,
 	).Exec()
 }
 
