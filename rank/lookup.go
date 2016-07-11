@@ -68,7 +68,7 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 		return rank, nil
 	}
 	// not in cassandra, do api lookup
-	ls.Logger.Infof("Expired rank for %s, performing lookup", id.String())
+	ls.Logger.Infof("Expired rank for %s, performing API lookup", id.String())
 	r := ls.Riot.Region(id.Region)
 	// TODO(igm): batch id lookups. we can fit a lot of these in a URI.
 	res, err := r.League([]string{strconv.Itoa(id.ID)})

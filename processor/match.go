@@ -60,13 +60,16 @@ func (m *Matches) process(id models.MatchID) {
 
 	// Retrieve match data
 	res, err := region.Match(strconv.Itoa(id.ID))
+	m.Logger.Infof("Fetched match data for %s", id.String())
 	if err != nil {
 		m.Logger.Errorf("Could not fetch details of match %s in region %s: %v", id.ID, id.Region, err)
 		return
 	}
 
 	// Ignore non-ranked
+	m.Logger.Infof("Checking correct queue for %s", id.String())
 	if res.QueueType != riotclient.QueueSolo5x5 && res.QueueType != riotclient.QueuePremade5x5 {
+		m.Logger.Infof("Wrong queue for %s: %s", id.String(), res.QueueType)
 		return
 	}
 
@@ -80,6 +83,7 @@ func (m *Matches) process(id models.MatchID) {
 	}
 
 	// Get min rank of players
+	m.Logger.Infof("Getting min ranks for %s", id.String())
 	rank := m.Ranks.MinRank(ids, res.Time())
 
 	// Minify JSON
@@ -87,6 +91,8 @@ func (m *Matches) process(id models.MatchID) {
 	if err != nil {
 		m.Logger.Errorf("Could not minify Riot JSON: %v", err)
 	}
+
+	m.Logger.Infof("Wrote match %s", id.String())
 
 	// Write match to Cassandra
 	m.Athena.WriteMatch(&models.Match{
