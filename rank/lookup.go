@@ -16,7 +16,7 @@ import (
 // LookupService looks things up.
 type LookupService struct {
 	Riot   *riotclient.RiotClient `inject:"t"`
-	Logger logrus.Logger          `inject:"t"`
+	Logger *logrus.Logger         `inject:"t"`
 	Athena *db.Athena             `inject:"t"`
 	Config *config.AppConfig      `inject:"t"`
 }

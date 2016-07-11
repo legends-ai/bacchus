@@ -11,7 +11,7 @@ import (
 // Queues is the processor for queues.
 type Summoners struct {
 	Riot    *riotclient.RiotClient `inject:"t"`
-	Logger  logrus.Logger          `inject:"t"`
+	Logger  *logrus.Logger         `inject:"t"`
 	Matches *Matches               `inject:"t"`
 	c       chan models.SummonerID
 	exists  map[models.SummonerID]bool

@@ -14,7 +14,7 @@ import (
 // Matches is the processor for matches.
 type Matches struct {
 	Riot      *riotclient.RiotClient `inject:"t"`
-	Logger    logrus.Logger          `inject:"t"`
+	Logger    *logrus.Logger         `inject:"t"`
 	Summoners *Summoners             `inject:"t"`
 	Athena    *db.Athena             `inject:"t"`
 	Ranks     *rank.LookupService    `inject:"t"`

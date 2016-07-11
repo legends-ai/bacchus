@@ -32,6 +32,12 @@ func main() {
 	keys := keypool.New(cfg.APIKeys, cfg.MaxRate)
 	injector.Map(keys)
 
+	// Create a client for Riot
+	_, err := injector.ApplyMap(riotclient.New())
+	if err != nil {
+		logger.Fatalf("Could not inject riot client: %v", err)
+	}
+
 	// Load Cassandra cluster
 	logger.Info("Connecting to Athena Cassandra")
 	athena, err := db.NewAthena(cfg)
@@ -41,19 +47,26 @@ func main() {
 	injector.Map(athena)
 
 	// Load lookup service
-	ls := &rank.LookupService{}
-	injector.ApplyMap(ls)
-
-	// Create a client for Riot
-	injector.ApplyMap(riotclient.New())
+	_, err = injector.ApplyMap(&rank.LookupService{})
+	if err != nil {
+		logger.Fatalf("Could not inject lookup service: %v", err)
+	}
 
 	// Load summoner and match processors
-	logger.Info("Loading procesors")
+	logger.Info("Loading processors")
 	s := processor.NewSummoners()
 	injector.Map(s)
 	m := processor.NewMatches()
+
 	injector.ApplyMap(m)
+	if err != nil {
+		logger.Fatalf("Could not inject match processor: %v", err)
+	}
+
 	injector.Apply(s)
+	if err != nil {
+		logger.Fatalf("Could not inject summoner processor: %v", err)
+	}
 
 	// Start processing queues
 	for i := 0; i < concurrency; i++ {
