@@ -68,7 +68,7 @@ func (m *Matches) process(id models.MatchID) {
 
 	// Ignore non-ranked
 	m.Logger.Infof("Checking correct queue for %s", id.String())
-	if res.QueueType != riotclient.QueueSolo5x5 && res.QueueType != riotclient.QueuePremade5x5 {
+	if res.QueueType != riotclient.QueueSolo5x5 && res.QueueType != riotclient.QueuePremade5x5 && res.QueueType != riotclient.QueueTeamBuilderDraftRanked5x5 {
 		m.Logger.Infof("Wrong queue for %s: %s", id.String(), res.QueueType)
 		return
 	}

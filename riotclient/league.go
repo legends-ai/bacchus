@@ -7,10 +7,11 @@ import (
 )
 
 const (
-	QueueSolo5x5    = "RANKED_SOLO_5x5"
-	QueuePremade5x5 = "RANKED_PREMADE_5x5"
-	QueueTeam3x3    = "RANKED_TEAM_3x3"
-	QueueTeam5x5    = "RANKED_TEAM_5x5"
+	QueueSolo5x5                   = "RANKED_SOLO_5x5"
+	QueuePremade5x5                = "RANKED_PREMADE_5x5"
+	QueueTeam3x3                   = "RANKED_TEAM_3x3"
+	QueueTeam5x5                   = "RANKED_TEAM_5x5"
+	QueueTeamBuilderDraftRanked5x5 = "TEAM_BUILDER_DRAFT_RANKED_5x5"
 
 	TierChallenger = "CHALLENGER"
 	TierMaster     = "MASTER"
