@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	keyspace         = "athena"
 	hasMatchQuery    = `SELECT COUNT(*) FROM matches WHERE id = ?`
 	insertMatchQuery = `INSERT INTO matches (id, match_id, region, body, rank) VALUES (?, ?, ?, ?, ?)`
 	rankingsQuery    = `SELECT rankings FROM rankings WHERE id = ?`
@@ -23,7 +24,7 @@ type Athena struct {
 // NewAthena creates a new Athena object from config
 func NewAthena(cfg *config.AppConfig) (*Athena, error) {
 	c := gocql.NewCluster(cfg.AthenaHosts...)
-	c.Keyspace = cfg.AthenaKeyspace
+	c.Keyspace = keyspace
 	s, err := c.CreateSession()
 	if err != nil {
 		return nil, err
