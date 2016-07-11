@@ -1,6 +1,7 @@
 package rank
 
 import (
+	"fmt"
 	"strconv"
 	"sync"
 	"time"
@@ -73,8 +74,41 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 	if err != nil {
 		return nil, err
 	}
-	// TODO league lookup
-	return nil, nil
+
+	dtos := res[strconv.Itoa(id.ID)]
+	var dto *riotclient.LeagueDto
+	for _, x := range dtos {
+		if x.Queue == riotclient.QueueSolo5x5 {
+			dto = x
+			break
+		}
+	}
+	if dto == nil {
+		// unranked
+		return nil, nil
+	}
+
+	tier := dto.Tier
+	var entry *riotclient.LeagueEntryDto
+	for _, x := range dto.Entries {
+		if x.PlayerOrTeamID == strconv.Itoa(id.ID) {
+			entry = x
+			break
+		}
+	}
+	if entry == nil {
+		// should not happen
+		return nil, fmt.Errorf("No summoner %d for league %s of %s", id.ID, dto.Name, dto.Tier)
+	}
+
+	rank, err = models.ParseRank(entry.Division, tier)
+	if err != nil {
+		return nil, fmt.Errorf("Invalid rank: %v", err)
+	}
+
+	// asynchronously update cassandra
+	go ls.updateCassandra(id, t, *rank)
+	return rank, nil
 }
 
 // lookupCassandra looks up the summoner rank in Cassandra.
@@ -91,5 +125,9 @@ func (ls *LookupService) lookupCassandra(id models.SummonerID, t time.Time) (*mo
 	if ranking != res.Latest() || time.Now().Sub(ranking.Time) < ls.Config.RankExpiry {
 		return &ranking.Rank, nil
 	}
-	return nil
+	return nil, nil
+}
+
+func (ls *LookupService) updateCassandra(id models.SummonerID, t time.Time, rank models.Rank) {
+	// TODO implement
 }
