@@ -7,7 +7,7 @@ clean:
 	rm bacchus || :
 
 test:
-	go test ./...
+	go test `glide novendor`
 
 serve: all
 	./bacchus
