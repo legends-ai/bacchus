@@ -12,14 +12,6 @@ const (
 	QueueTeam3x3                   = "RANKED_TEAM_3x3"
 	QueueTeam5x5                   = "RANKED_TEAM_5x5"
 	QueueTeamBuilderDraftRanked5x5 = "TEAM_BUILDER_DRAFT_RANKED_5x5"
-
-	TierChallenger = "CHALLENGER"
-	TierMaster     = "MASTER"
-	TierDiamond    = "DIAMOND"
-	TierPlatinum   = "PLATINUM"
-	TierGold       = "GOLD"
-	TierSilver     = "SILVER"
-	TierBronze     = "BRONZE"
 )
 
 // LeagueResponse is the league response

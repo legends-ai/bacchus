@@ -1,9 +1,21 @@
 package models
 
-import (
-	"fmt"
+import "fmt"
 
-	"github.com/simplyianm/bacchus/riotclient"
+const (
+	TierChallenger = "CHALLENGER"
+	TierMaster     = "MASTER"
+	TierDiamond    = "DIAMOND"
+	TierPlatinum   = "PLATINUM"
+	TierGold       = "GOLD"
+	TierSilver     = "SILVER"
+	TierBronze     = "BRONZE"
+
+	DivisionI   = "I"
+	DivisionII  = "II"
+	DivisionIII = "III"
+	DivisionIV  = "IV"
+	DivisionV   = "V"
 )
 
 // Rank represents a rank.
@@ -20,8 +32,8 @@ func (r Rank) ToNumber() uint32 {
 // RankFromNumber returns a Rank from a number.
 func RankFromNumber(n uint32) Rank {
 	return Rank{
-		Division: uint16(n >> 16),
-		Tier:     uint16(n & 0xffff),
+		Division: uint16(n & 0xffff),
+		Tier:     uint16(n >> 16),
 	}
 }
 
@@ -40,19 +52,19 @@ func ParseRank(tier, division string) (*Rank, error) {
 
 func parseTier(s string) uint16 {
 	switch s {
-	case riotclient.TierChallenger:
+	case TierChallenger:
 		return 70
-	case riotclient.TierMaster:
+	case TierMaster:
 		return 60
-	case riotclient.TierDiamond:
+	case TierDiamond:
 		return 50
-	case riotclient.TierPlatinum:
+	case TierPlatinum:
 		return 40
-	case riotclient.TierGold:
+	case TierGold:
 		return 30
-	case riotclient.TierSilver:
+	case TierSilver:
 		return 20
-	case riotclient.TierBronze:
+	case TierBronze:
 		return 10
 	default:
 		return 0
@@ -61,15 +73,15 @@ func parseTier(s string) uint16 {
 
 func parseDivision(s string) uint16 {
 	switch s {
-	case "I":
+	case DivisionI:
 		return 50
-	case "II":
+	case DivisionII:
 		return 40
-	case "III":
+	case DivisionIII:
 		return 30
-	case "IV":
+	case DivisionIV:
 		return 20
-	case "V":
+	case DivisionV:
 		return 10
 	default:
 		return 0
