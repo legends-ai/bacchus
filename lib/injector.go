@@ -35,12 +35,16 @@ func NewInjector() inject.Injector {
 	}
 
 	// Load Cassandra cluster
-	logger.Info("Connecting to Athena Cassandra")
-	athena, err := db.NewAthena(cfg)
+	logger.Info("Connecting to Cassandra")
+	session, err := db.NewSession(cfg)
 	if err != nil {
-		logger.Fatalf("Could not load Athena cluster: %v", err)
+		logger.Fatalf("Could not load Cassandra cluster: %v", err)
 	}
-	injector.Map(athena)
+	injector.Map(session)
+
+	// DAOs
+	injector.ApplyMap(&db.MatchesDAO{})
+	injector.ApplyMap(&db.RankingsDAO{})
 
 	// Load lookup service
 	_, err = injector.ApplyMap(&rank.LookupService{})

@@ -15,10 +15,10 @@ import (
 
 // LookupService looks things up.
 type LookupService struct {
-	Riot   *riotclient.RiotClient `inject:"t"`
-	Logger *logrus.Logger         `inject:"t"`
-	Athena *db.Athena             `inject:"t"`
-	Config *config.AppConfig      `inject:"t"`
+	Riot     *riotclient.RiotClient `inject:"t"`
+	Logger   *logrus.Logger         `inject:"t"`
+	Config   *config.AppConfig      `inject:"t"`
+	Rankings *db.RankingsDAO        `inject:"t"`
 }
 
 // Lookup looks up the given ids for a time and returns a rank.
@@ -119,7 +119,7 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 // and an error if it exists.
 func (ls *LookupService) lookupCassandra(id models.SummonerID, t time.Time) (*models.Rank, bool, error) {
 	// check cassandra cache
-	res, err := ls.Athena.Rankings(id)
+	res, err := ls.Rankings.Get(id)
 	if err != nil {
 		return nil, false, fmt.Errorf("could not lookup Cassandra: %v", err)
 	}
@@ -137,11 +137,11 @@ func (ls *LookupService) lookupCassandra(id models.SummonerID, t time.Time) (*mo
 func (ls *LookupService) updateCassandra(id models.SummonerID, r models.Ranking, exists bool) {
 	// TODO implement
 	if exists {
-		if err := ls.Athena.UpdateRanking(id, r); err != nil {
+		if err := ls.Rankings.Update(id, r); err != nil {
 			ls.Logger.Errorf("Error updating ranking: %v", err)
 		}
 	} else {
-		if err := ls.Athena.InsertRanking(id, r); err != nil {
+		if err := ls.Rankings.Insert(id, r); err != nil {
 			ls.Logger.Errorf("Error inserting ranking: %v", err)
 		}
 	}

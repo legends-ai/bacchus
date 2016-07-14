@@ -16,7 +16,7 @@ type Matches struct {
 	Riot      *riotclient.RiotClient `inject:"t"`
 	Logger    *logrus.Logger         `inject:"t"`
 	Summoners *Summoners             `inject:"t"`
-	Athena    *db.Athena             `inject:"t"`
+	Matches   *db.MatchesDAO         `inject:"t"`
 	Ranks     *rank.LookupService    `inject:"t"`
 	c         chan models.MatchID
 }
@@ -31,7 +31,7 @@ func NewMatches() *Matches {
 // Offer offers a match to the queue which may accept it.
 func (m *Matches) Offer(id models.MatchID) {
 	// if key exists in cassandra return
-	ok, err := m.Athena.HasMatch(id)
+	ok, err := m.Matches.Exists(id)
 	if err != nil {
 		m.Logger.Warnf("Could not check match: %v", err)
 		return
@@ -95,7 +95,7 @@ func (m *Matches) process(id models.MatchID) {
 	m.Logger.Infof("Wrote match %s", id.String())
 
 	// Write match to Cassandra
-	m.Athena.WriteMatch(&models.Match{
+	m.Matches.Insert(&models.Match{
 		ID:    id,
 		Body:  json,
 		Patch: res.MatchVersion,
