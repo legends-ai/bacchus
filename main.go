@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/simplyianm/bacchus/lib"
 	"github.com/simplyianm/bacchus/models"
 	"github.com/simplyianm/bacchus/processor"
-	"github.com/simplyianm/league/lib"
 )
 
 const (

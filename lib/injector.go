@@ -2,13 +2,13 @@ package lib
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/simplyianm/bacchus/config"
 	"github.com/simplyianm/bacchus/db"
 	"github.com/simplyianm/bacchus/processor"
 	"github.com/simplyianm/bacchus/rank"
 	"github.com/simplyianm/bacchus/riotclient"
 	"github.com/simplyianm/inject"
 	"github.com/simplyianm/keypool"
-	"github.com/simplyianm/riot/config"
 )
 
 // NewInjector sets up dependencies for Bacchus.
