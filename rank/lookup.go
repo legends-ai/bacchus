@@ -37,8 +37,10 @@ func (ls *LookupService) Lookup(ids []models.SummonerID, t time.Time) map[models
 			mu.Lock()
 			ret[id] = *rank
 			mu.Unlock()
+			wg.Done()
 		}(id)
 	}
+	wg.Wait()
 	return ret
 }
 
