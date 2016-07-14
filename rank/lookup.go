@@ -60,7 +60,7 @@ func (ls *LookupService) MinRank(ids []models.SummonerID, t time.Time) models.Ra
 
 func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank, error) {
 	// check cassandra cache
-	rank, err := ls.lookupCassandra(id, t)
+	rank, exists, err := ls.lookupCassandra(id, t)
 	if err != nil {
 		return nil, err
 	}
@@ -108,27 +108,39 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 	}
 
 	// asynchronously update cassandra
-	go ls.updateCassandra(id, t, *rank)
+	go ls.updateCassandra(id, models.Ranking{t, *rank}, exists)
 	return rank, nil
 }
 
 // lookupCassandra looks up the summoner rank in Cassandra.
-func (ls *LookupService) lookupCassandra(id models.SummonerID, t time.Time) (*models.Rank, error) {
+// Returns the rank if it exists, whether the rank is already in Cassandra,
+// and an error if it exists.
+func (ls *LookupService) lookupCassandra(id models.SummonerID, t time.Time) (*models.Rank, bool, error) {
 	// check cassandra cache
 	res, err := ls.Athena.Rankings(id)
 	if err != nil {
-		return nil, fmt.Errorf("could not lookup Cassandra: %v", err)
+		return nil, false, fmt.Errorf("could not lookup Cassandra: %v", err)
 	}
 	ranking := res.AtTime(t)
 	if ranking == nil {
-		return nil, nil
+		return nil, false, nil
 	}
 	if ranking != res.Latest() || time.Now().Sub(ranking.Time) < ls.Config.RankExpiry {
-		return &ranking.Rank, nil
+		return &ranking.Rank, true, nil
 	}
-	return nil, nil
+	return nil, true, nil
 }
 
-func (ls *LookupService) updateCassandra(id models.SummonerID, t time.Time, rank models.Rank) {
+// updateCassandra updates cassandra with the given ranking.
+func (ls *LookupService) updateCassandra(id models.SummonerID, r models.Ranking, exists bool) {
 	// TODO implement
+	if exists {
+		if err := ls.Athena.UpdateRanking(id, r); err != nil {
+			ls.Logger.Errorf("Error updating ranking: %v", err)
+		}
+	} else {
+		if err := ls.Athena.InsertRanking(id, r); err != nil {
+			ls.Logger.Errorf("Error inserting ranking: %v", err)
+		}
+	}
 }

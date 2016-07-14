@@ -10,10 +10,12 @@ import (
 )
 
 const (
-	keyspace         = "athena"
-	hasMatchQuery    = `SELECT COUNT(*) FROM matches WHERE id = ?`
-	insertMatchQuery = `INSERT INTO matches (id, region, body, rank, patch) VALUES (?, ?, ?, ?, ?)`
-	rankingsQuery    = `SELECT rankings FROM rankings WHERE id = ?`
+	keyspace           = "athena"
+	hasMatchQuery      = `SELECT COUNT(*) FROM matches WHERE id = ?`
+	insertMatchQuery   = `INSERT INTO matches (id, region, body, rank, patch) VALUES (?, ?, ?, ?, ?)`
+	rankingsQuery      = `SELECT rankings FROM rankings WHERE id = ?`
+	insertRankingQuery = `INSERT INTO rankings (id, rankings) VALUES (?, {{'rank': ?, 'time': ?}})`
+	updateRankingQuery = `UPDATE rankings SET rankings = rankings + {{'rank': ?, 'time': ?}} WHERE id = ?`
 )
 
 // Athena is the athena cluster
@@ -67,4 +69,14 @@ func (a *Athena) Rankings(id models.SummonerID) (*models.RankingList, error) {
 		})
 	}
 	return models.NewRankingList(ret), nil
+}
+
+// InsertRanking stores an Athena ranking row for a new summoner.
+func (a *Athena) InsertRanking(id models.SummonerID, r models.Ranking) error {
+	return a.Session.Query(insertRankingQuery, id.String(), r.Rank.ToNumber(), r.Time).Exec()
+}
+
+// UpdateRanking updates the Athena ranking of the given summoner with the given ranking.
+func (a *Athena) UpdateRanking(id models.SummonerID, r models.Ranking) error {
+	return a.Session.Query(updateRankingQuery, r.Rank.ToNumber(), r.Time, id.String()).Exec()
 }
