@@ -29,12 +29,28 @@ func (r Rank) ToNumber() uint32 {
 	return uint32(r.Tier)<<16 | uint32(r.Division)
 }
 
+// Over checks if the rank is >= the given rank
+func (r Rank) Over(o Rank) bool {
+	return r.ToNumber() >= o.ToNumber()
+}
+
 // RankFromNumber returns a Rank from a number.
 func RankFromNumber(n uint32) Rank {
 	return Rank{
 		Division: uint16(n & 0xffff),
 		Tier:     uint16(n >> 16),
 	}
+}
+
+// MinRank gets the minimum rank out of the given ranks
+func MinRank(res []Rank) Rank {
+	min := Rank{1<<16 - 1, 1<<16 - 1}
+	for _, rank := range res {
+		if !rank.Over(min) {
+			min = rank
+		}
+	}
+	return min
 }
 
 // ParseRank parses a tier and division to return a Rank.

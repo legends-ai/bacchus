@@ -19,12 +19,15 @@ type Matches struct {
 	Matches   *db.MatchesDAO         `inject:"t"`
 	Ranks     *rank.LookupService    `inject:"t"`
 	c         chan models.MatchID
+	cutoff    models.Rank
 }
 
 // NewMatches creates a new processor.Matches.
 func NewMatches() *Matches {
+	cutoff, _ := models.ParseRank(models.TierPlatinum, models.DivisionV)
 	return &Matches{
-		c: make(chan models.MatchID),
+		c:      make(chan models.MatchID),
+		cutoff: *cutoff,
 	}
 }
 
@@ -84,7 +87,16 @@ func (m *Matches) process(id models.MatchID) {
 
 	// Get min rank of players
 	m.Logger.Infof("Getting min ranks for %s", id.String())
-	rank := m.Ranks.MinRank(ids, res.Time())
+	sums := m.Ranks.Lookup(ids, res.Time())
+
+	var ranks []models.Rank
+	for id, r := range sums {
+		ranks = append(ranks, r)
+		if r.Over(m.cutoff) {
+			m.Summoners.Offer(id)
+		}
+	}
+	rank := models.MinRank(ranks)
 
 	// Minify JSON
 	json, err := m.minifyJSON(res.RawJSON)

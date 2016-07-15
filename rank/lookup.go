@@ -30,6 +30,7 @@ func (ls *LookupService) Lookup(ids []models.SummonerID, t time.Time) map[models
 	for _, id := range ids {
 		// Asynchronously look up all summoners
 		go func(id models.SummonerID) {
+			defer wg.Done()
 			rank, err := ls.lookup(id, t)
 			if err != nil {
 				ls.Logger.Errorf("Error looking up rank: %v", err)
@@ -41,27 +42,10 @@ func (ls *LookupService) Lookup(ids []models.SummonerID, t time.Time) map[models
 			mu.Lock()
 			ret[id] = *rank
 			mu.Unlock()
-			wg.Done()
 		}(id)
 	}
 	wg.Wait()
 	return ret
-}
-
-// MinRank gets the minimum rank of the given summoners.
-func (ls *LookupService) MinRank(ids []models.SummonerID, t time.Time) models.Rank {
-	res := ls.Lookup(ids, t)
-	min := models.Rank{1<<16 - 1, 1<<16 - 1}
-	for _, rank := range res {
-		if rank.Tier > min.Tier {
-			continue
-		}
-		if rank.Division > min.Division {
-			continue
-		}
-		min = rank
-	}
-	return min
 }
 
 func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank, error) {
