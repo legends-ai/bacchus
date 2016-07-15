@@ -124,7 +124,6 @@ func (ls *LookupService) lookupCassandra(id models.SummonerID, t time.Time) (*mo
 
 // updateCassandra updates cassandra with the given ranking.
 func (ls *LookupService) updateCassandra(id models.SummonerID, r models.Ranking, exists bool) {
-	// TODO implement
 	if exists {
 		if err := ls.Rankings.Update(id, r); err != nil {
 			ls.Logger.Errorf("Error updating ranking: %v", err)
