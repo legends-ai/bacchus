@@ -66,6 +66,7 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 		return nil, err
 	}
 
+	// Find correct DTO of player
 	dtos := res[strconv.Itoa(id.ID)]
 	var dto *riotclient.LeagueDto
 	for _, x := range dtos {
@@ -79,6 +80,7 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 		return nil, nil
 	}
 
+	// Find player ranking
 	tier := dto.Tier
 	var entry *riotclient.LeagueEntryDto
 	for _, x := range dto.Entries {
@@ -91,16 +93,16 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 		// should not happen
 		return nil, fmt.Errorf("no summoner %d for league %s of %s", id.ID, dto.Name, dto.Tier)
 	}
-
 	rank, err = models.ParseRank(tier, entry.Division)
 	if err != nil {
 		return nil, fmt.Errorf("invalid rank: %v", err)
 	}
+	ranking := models.Ranking{t, *rank}
 
 	ls.Logger.Infof("Found rank of %d: %s %s (%d %x)", id.ID, tier, entry.Division, rank.ToNumber(), rank.ToNumber())
 
-	// Update updated ranking
-	go ls.updateRanking(id, models.Ranking{t, *rank}, exists)
+	// Update updated ranking asynchronously
+	go ls.updateRanking(id, ranking, exists)
 
 	return rank, nil
 }
