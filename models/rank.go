@@ -39,15 +39,18 @@ func RankFromNumber(n uint32) Rank {
 
 // ParseRank parses a tier and division to return a Rank.
 func ParseRank(tier, division string) (*Rank, error) {
-	di := parseDivision(division)
 	ti := parseTier(tier)
-	if di == 0 {
-		return nil, fmt.Errorf("Invalid division %s", division)
-	}
 	if ti == 0 {
 		return nil, fmt.Errorf("Invalid tier %s", tier)
 	}
-	return &Rank{di, ti}, nil
+	di := parseDivision(division)
+	if di == 0 {
+		return nil, fmt.Errorf("Invalid division %s", division)
+	}
+	return &Rank{
+		Tier:     ti,
+		Division: di,
+	}, nil
 }
 
 func parseTier(s string) uint16 {

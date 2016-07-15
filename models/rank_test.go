@@ -30,3 +30,18 @@ func TestRankFromNumber(t *testing.T) {
 		assert.Equal(t, test.Expected, RankFromNumber(test.Number))
 	}
 }
+
+func TestParseRank(t *testing.T) {
+	for _, test := range []struct {
+		Tier     string
+		Division string
+		Out      uint32
+	}{
+		{TierBronze, DivisionIII, 0x00100030},
+		{TierChallenger, DivisionI, 0x00700050},
+	} {
+		r, err := ParseRank(test.Tier, test.Division)
+		assert.Nil(t, err)
+		assert.Equal(t, *r, RankFromNumber(test.Out))
+	}
+}
