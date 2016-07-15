@@ -49,6 +49,7 @@ func (b *batchRegion) batch() {
 			for _, s := range subs {
 				s.e <- err
 				close(s.c)
+				close(s.e)
 			}
 			return
 		}
@@ -57,6 +58,7 @@ func (b *batchRegion) batch() {
 		for _, s := range subs {
 			s.c <- res
 			close(s.c)
+			close(s.e)
 		}
 	}
 }
