@@ -5,12 +5,10 @@ import (
 	"sync"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/simplyianm/bacchus/config"
 	"github.com/simplyianm/bacchus/models"
 	"github.com/simplyianm/bacchus/riotclient"
 )
-
-// Number of players to batch lookups at once
-const batchSize = 20
 
 // subscription is a subscription to later complete.
 type subscription struct {
@@ -34,7 +32,7 @@ func (b *batchRegion) batch() {
 	for {
 		sub := <-b.subs
 		subs = append(subs, sub)
-		if len(subs) < batchSize {
+		if len(subs) < b.b.Config.BatchSize {
 			continue
 		}
 
@@ -83,6 +81,7 @@ func (b *batchRegion) subscribe(id models.SummonerID) (riotclient.LeagueResponse
 type Batcher struct {
 	Riot   *riotclient.RiotClient `inject:"t"`
 	Logger *logrus.Logger         `inject:"t"`
+	Config *config.AppConfig      `inject:"t"`
 
 	batchers map[string]*batchRegion
 	mu       sync.Mutex
