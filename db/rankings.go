@@ -1,8 +1,6 @@
 package db
 
 import (
-	"time"
-
 	"github.com/gocql/gocql"
 	"github.com/simplyianm/bacchus/models"
 )
@@ -21,10 +19,7 @@ type RankingsDAO struct {
 
 // Get grabs all rankings of a summoner.
 func (a *RankingsDAO) Get(id models.SummonerID) (*models.RankingList, error) {
-	var rankings []struct {
-		Time time.Time
-		Rank int64
-	}
+	var rankings []models.RankingUDT
 	if err := a.Session.Query(rankingsQuery, id.String()).Scan(&rankings); err != nil && err != gocql.ErrNotFound {
 		return nil, err
 	}
