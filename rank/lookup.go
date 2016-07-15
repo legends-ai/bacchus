@@ -113,6 +113,7 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 		return nil, fmt.Errorf("invalid rank: %v", err)
 	}
 
+	ls.Logger.Infof("Found rank of %d: %s %s", id.ID, tier, entry.Division)
 	// asynchronously update cassandra
 	go ls.updateCassandra(id, models.Ranking{t, *rank}, exists)
 	return rank, nil

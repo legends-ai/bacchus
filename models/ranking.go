@@ -11,6 +11,17 @@ type Ranking struct {
 	Rank Rank
 }
 
+// UDTSet returns a UDT set type for this Ranking.
+func (r Ranking) UDTSet() []RankingUDT {
+	return []RankingUDT{{r.Time, r.Rank.ToNumber()}}
+}
+
+// RankingUDT is the UDT for a ranking.
+type RankingUDT struct {
+	Time time.Time
+	Rank uint32
+}
+
 // RankingList is a list of rankings.
 type RankingList struct {
 	Rankings []*Ranking

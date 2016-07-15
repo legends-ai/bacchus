@@ -9,8 +9,8 @@ import (
 
 const (
 	rankingsQuery      = `SELECT rankings FROM rankings WHERE id = ?`
-	insertRankingQuery = `INSERT INTO rankings (id, rankings) VALUES (?, {{'rank': ?, 'time': ?}})`
-	updateRankingQuery = `UPDATE rankings SET rankings = rankings + {{'rank': ?, 'time': ?}} WHERE id = ?`
+	insertRankingQuery = `INSERT INTO rankings (id, rankings) VALUES (?, ?)`
+	updateRankingQuery = `UPDATE rankings SET rankings = rankings + ? WHERE id = ?`
 )
 
 // RankingsDAO is a rankings DAO.
@@ -40,10 +40,10 @@ func (a *RankingsDAO) Get(id models.SummonerID) (*models.RankingList, error) {
 
 // Insert stores an Athena ranking row for a new summoner.
 func (a *RankingsDAO) Insert(id models.SummonerID, r models.Ranking) error {
-	return a.Session.Query(insertRankingQuery, id.String(), r.Rank.ToNumber(), r.Time).Exec()
+	return a.Session.Query(insertRankingQuery, id.String(), r.UDTSet()).Exec()
 }
 
 // Update updates the Athena ranking of the given summoner with the given ranking.
 func (a *RankingsDAO) Update(id models.SummonerID, r models.Ranking) error {
-	return a.Session.Query(updateRankingQuery, r.Rank.ToNumber(), r.Time, id.String()).Exec()
+	return a.Session.Query(updateRankingQuery, r.UDTSet(), id.String()).Exec()
 }
