@@ -6,5 +6,6 @@ CREATE TYPE IF NOT EXISTS athena.ranking (
 CREATE TABLE IF NOT EXISTS athena.rankings (
   id text,
   rankings set<frozen<athena.ranking>>,
-  PRIMARY KEY(id)
+  rank bigint,
+  PRIMARY KEY(id, rank)
 );
