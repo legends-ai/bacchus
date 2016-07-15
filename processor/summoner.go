@@ -46,15 +46,24 @@ func (s *Summoners) Start() {
 	}
 }
 
-// Seed adds summoners from the database.
+// Seed adds summoners from the database based off of rank.
 func (s *Summoners) Seed() {
-	// TODO(igm): fuck aditi
-	s.pradSeed()
-}
-
-// pradSeed seeds Aditi.
-func (s *Summoners) pradSeed() {
-	s.Offer(models.SummonerID{"na", 32875076})
+	rank, err := models.ParseRank(models.TierPlatinum, models.DivisionV)
+	if err != nil {
+		s.Logger.Fatalf("Invalid static rank: %v", err)
+	}
+	ids, err := s.Rankings.AboveRank(*rank, 1000)
+	if err != nil {
+		s.Logger.Fatalf("Could not perform initial seed: %v", err)
+	}
+	if len(ids) == 0 {
+		// no plat, do alternative seed
+		s.Offer(models.SummonerID{"na", 32875076}) // Pradyuman himself
+		return
+	}
+	for _, id := range ids {
+		s.Offer(id)
+	}
 }
 
 func (s *Summoners) process(id models.SummonerID) {

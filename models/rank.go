@@ -57,11 +57,11 @@ func MinRank(res []Rank) Rank {
 func ParseRank(tier, division string) (*Rank, error) {
 	ti := parseTier(tier)
 	if ti == 0 {
-		return nil, fmt.Errorf("Invalid tier %s", tier)
+		return nil, fmt.Errorf("invalid tier %s", tier)
 	}
 	di := parseDivision(division)
 	if di == 0 {
-		return nil, fmt.Errorf("Invalid division %s", division)
+		return nil, fmt.Errorf("invalid division %s", division)
 	}
 	return &Rank{
 		Tier:     ti,

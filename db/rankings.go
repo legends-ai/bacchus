@@ -9,6 +9,7 @@ const (
 	rankingsQuery      = `SELECT rankings FROM rankings WHERE id = ?`
 	insertRankingQuery = `INSERT INTO rankings (id, rankings, rank) VALUES (?, ?, ?)`
 	updateRankingQuery = `UPDATE rankings SET rankings = rankings + ? AND rank = ? WHERE id = ?`
+	aboveRankQuery     = `SELECT id FROM rankings WHERE rank >= ? LIMIT ? ALLOW FILTERING`
 )
 
 // RankingsDAO is a rankings DAO.
@@ -33,9 +34,18 @@ func (a *RankingsDAO) Get(id models.SummonerID) (*models.RankingList, error) {
 	return models.NewRankingList(ret), nil
 }
 
+// AboveRank gets all summoner ids above a given rank with a limit.
+func (r *RankingsDAO) AboveRank(rank models.Rank, limit int) ([]models.SummonerID, error) {
+	var ret []models.SummonerID
+	if err := r.Session.Query(aboveRankQuery, rank.ToNumber(), limit).Scan(&ret); err != nil && err != gocql.ErrNotFound {
+		return nil, err
+	}
+	return ret, nil
+}
+
 // Insert stores an Athena ranking row for a new summoner.
 func (a *RankingsDAO) Insert(id models.SummonerID, r models.Ranking) error {
-	return a.Session.Query(insertRankingQuery, id.String(), r.UDTSet(), r.ToNumber()).Exec()
+	return a.Session.Query(insertRankingQuery, id.String(), r.UDTSet(), r.Rank.ToNumber()).Exec()
 }
 
 // Update updates the Athena ranking of the given summoner with the given ranking.
