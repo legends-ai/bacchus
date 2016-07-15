@@ -36,7 +36,7 @@ type LeagueEntryDto struct {
 func (r *API) League(summonerIds []string) (LeagueResponse, error) {
 	idsStr := strings.Join(summonerIds, ",")
 	resp, err := r.fetch(
-		fmt.Sprintf("%s/v2.5/league/by-summoner/%s", r.apiBase, idsStr))
+		fmt.Sprintf("%s/v2.5/league/by-summoner/%s", r.apiLol, idsStr))
 	if err != nil {
 		return nil, err
 	}
