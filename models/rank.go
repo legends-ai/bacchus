@@ -53,19 +53,19 @@ func ParseRank(tier, division string) (*Rank, error) {
 func parseTier(s string) uint16 {
 	switch s {
 	case TierChallenger:
-		return 70
+		return 0x70
 	case TierMaster:
-		return 60
+		return 0x60
 	case TierDiamond:
-		return 50
+		return 0x50
 	case TierPlatinum:
-		return 40
+		return 0x40
 	case TierGold:
-		return 30
+		return 0x30
 	case TierSilver:
-		return 20
+		return 0x20
 	case TierBronze:
-		return 10
+		return 0x10
 	default:
 		return 0
 	}
@@ -74,15 +74,15 @@ func parseTier(s string) uint16 {
 func parseDivision(s string) uint16 {
 	switch s {
 	case DivisionI:
-		return 50
+		return 0x50
 	case DivisionII:
-		return 40
+		return 0x40
 	case DivisionIII:
-		return 30
+		return 0x30
 	case DivisionIV:
-		return 20
+		return 0x20
 	case DivisionV:
-		return 10
+		return 0x10
 	default:
 		return 0
 	}
