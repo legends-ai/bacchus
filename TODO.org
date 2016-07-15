@@ -1,10 +1,14 @@
 * Todos for Bacchus
 
-** TODO store stuff in Cassandra
-
-** TODO merge with League service
-
 ** TODO setup hosting
 
-** TODO seed from something other than featured games
+** DONE store stuff in Cassandra
+CLOSED: [2016-07-15 Fri 13:20]
+
+
+** DONE merge with League service
+CLOSED: [2016-07-15 Fri 13:20]
+
+** DONE seed from something other than featured games
+CLOSED: [2016-07-15 Fri 13:20]
 Have a summoners list from Cassandra?
