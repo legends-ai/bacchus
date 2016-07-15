@@ -33,6 +33,7 @@ func (ls *LookupService) Lookup(ids []models.SummonerID, t time.Time) map[models
 			rank, err := ls.lookup(id, t)
 			if err != nil {
 				ls.Logger.Errorf("Error looking up rank: %v", err)
+				return
 			}
 			mu.Lock()
 			ret[id] = *rank
