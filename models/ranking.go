@@ -22,10 +22,18 @@ type RankingUDT struct {
 	Rank uint32    `cql:"rank"`
 }
 
+// ToRanking converts this UDT to a ranking.
+func (r RankingUDT) ToRanking() *Ranking {
+	return &Ranking{
+		Time: r.Time,
+		Rank: RankFromNumber(r.Rank),
+	}
+}
+
 // RankingList is a list of rankings.
 type RankingList struct {
 	Rankings []*Ranking
-	s        bool
+	s        bool // sorted?
 }
 
 // NewRankingList creates a new ranking list.

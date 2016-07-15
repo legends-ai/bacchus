@@ -26,10 +26,7 @@ func (a *RankingsDAO) Get(id models.SummonerID) (*models.RankingList, error) {
 	}
 	var ret []*models.Ranking
 	for _, ranking := range rankings {
-		ret = append(ret, &models.Ranking{
-			Time: ranking.Time,
-			Rank: models.RankFromNumber(uint32(ranking.Rank)),
-		})
+		ret = append(ret, ranking.ToRanking())
 	}
 	return models.NewRankingList(ret), nil
 }
