@@ -92,7 +92,7 @@ func (m *Matches) process(id models.MatchID) {
 		m.Logger.Errorf("Could not minify Riot JSON: %v", err)
 	}
 
-	m.Logger.Infof("Wrote match %s", id.String())
+	m.Logger.Infof("Wrote match %s with rank %d", id.String(), rank.ToNumber())
 
 	// Write match to Cassandra
 	m.Matches.Insert(&models.Match{
