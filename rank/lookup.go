@@ -105,12 +105,12 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 	}
 	if entry == nil {
 		// should not happen
-		return nil, fmt.Errorf("No summoner %d for league %s of %s", id.ID, dto.Name, dto.Tier)
+		return nil, fmt.Errorf("no summoner %d for league %s of %s", id.ID, dto.Name, dto.Tier)
 	}
 
-	rank, err = models.ParseRank(entry.Division, tier)
+	rank, err = models.ParseRank(tier, entry.Division)
 	if err != nil {
-		return nil, fmt.Errorf("Invalid rank: %v", err)
+		return nil, fmt.Errorf("invalid rank: %v", err)
 	}
 
 	// asynchronously update cassandra
