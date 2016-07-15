@@ -10,16 +10,16 @@ import (
 	"github.com/simplyianm/bacchus/config"
 	"github.com/simplyianm/bacchus/db"
 	"github.com/simplyianm/bacchus/models"
-	"github.com/simplyianm/bacchus/riotclient"
+	"github.com/simplyianm/bacchus/riot"
 )
 
 // LookupService looks things up.
 type LookupService struct {
-	Riot     *riotclient.RiotClient `inject:"t"`
-	Logger   *logrus.Logger         `inject:"t"`
-	Config   *config.AppConfig      `inject:"t"`
-	Rankings *db.RankingsDAO        `inject:"t"`
-	Batcher  *Batcher               `inject:"t"`
+	Riot     *riot.Client      `inject:"t"`
+	Logger   *logrus.Logger    `inject:"t"`
+	Config   *config.AppConfig `inject:"t"`
+	Rankings *db.RankingsDAO   `inject:"t"`
+	Batcher  *Batcher          `inject:"t"`
 }
 
 // Lookup looks up the given ids for a time and returns a rank.
@@ -62,9 +62,9 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 	ls.Logger.Infof("Expired rank for %s, performing API lookup", id.String())
 	dtos, err := ls.Batcher.Lookup(id)
 
-	var dto *riotclient.LeagueDto
+	var dto *riot.LeagueDto
 	for _, x := range dtos {
-		if x.Queue == riotclient.QueueSolo5x5 {
+		if x.Queue == riot.QueueSolo5x5 {
 			dto = x
 			break
 		}
@@ -76,7 +76,7 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 
 	// Find player ranking
 	tier := dto.Tier
-	var entry *riotclient.LeagueEntryDto
+	var entry *riot.LeagueEntryDto
 	for _, x := range dto.Entries {
 		if x.PlayerOrTeamID == strconv.Itoa(id.ID) {
 			entry = x

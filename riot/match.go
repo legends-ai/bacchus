@@ -1,4 +1,4 @@
-package riotclient
+package riot
 
 import (
 	"encoding/json"

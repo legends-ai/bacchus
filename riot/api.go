@@ -1,4 +1,4 @@
-package riotclient
+package riot
 
 import (
 	"fmt"
@@ -15,21 +15,21 @@ const (
 	regionHeader = "riot-region"
 )
 
-// RiotClient stores clients.
-type RiotClient struct {
+// Client stores API clients.
+type Client struct {
 	Keys    *keypool.Keypool `inject:"t"`
 	clients map[string]*API
 }
 
-// New creates a new RiotClient.
-func New() *RiotClient {
-	return &RiotClient{
+// New creates a new Client.
+func New() *Client {
+	return &Client{
 		clients: map[string]*API{},
 	}
 }
 
 // Region gets an API client for the given region.
-func (rc *RiotClient) Region(region string) *API {
+func (rc *Client) Region(region string) *API {
 	inst, ok := rc.clients[region]
 	if !ok {
 		base := fmt.Sprintf(riotBaseTpl, region)
@@ -49,7 +49,7 @@ type API struct {
 	Region  string
 	apiBase string
 	apiLol  string
-	rc      *RiotClient
+	rc      *Client
 }
 
 // fetchWithParams fetches a path with the given parameters.

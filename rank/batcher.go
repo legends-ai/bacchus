@@ -7,13 +7,13 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/simplyianm/bacchus/config"
 	"github.com/simplyianm/bacchus/models"
-	"github.com/simplyianm/bacchus/riotclient"
+	"github.com/simplyianm/bacchus/riot"
 )
 
 // subscription is a subscription to later complete.
 type subscription struct {
 	id models.SummonerID
-	c  chan riotclient.LeagueResponse
+	c  chan riot.LeagueResponse
 	e  chan error
 }
 
@@ -21,7 +21,7 @@ type subscription struct {
 type batchRegion struct {
 	b *Batcher
 	// Region
-	r *riotclient.API
+	r *riot.API
 	// Channel containing subscriptions
 	subs chan *subscription
 }
@@ -62,10 +62,10 @@ func (b *batchRegion) batch() {
 }
 
 // subscribe subscribes to the response generated from looking up an id.
-func (b *batchRegion) subscribe(id models.SummonerID) (riotclient.LeagueResponse, error) {
+func (b *batchRegion) subscribe(id models.SummonerID) (riot.LeagueResponse, error) {
 	sub := &subscription{
 		id: id,
-		c:  make(chan riotclient.LeagueResponse),
+		c:  make(chan riot.LeagueResponse),
 		e:  make(chan error),
 	}
 	b.subs <- sub
@@ -79,9 +79,9 @@ func (b *batchRegion) subscribe(id models.SummonerID) (riotclient.LeagueResponse
 
 // Batcher batches ranking lookups from Riot.
 type Batcher struct {
-	Riot   *riotclient.RiotClient `inject:"t"`
-	Logger *logrus.Logger         `inject:"t"`
-	Config *config.AppConfig      `inject:"t"`
+	Riot   *riot.Client      `inject:"t"`
+	Logger *logrus.Logger    `inject:"t"`
+	Config *config.AppConfig `inject:"t"`
 
 	batchers map[string]*batchRegion
 	mu       sync.Mutex
@@ -112,7 +112,7 @@ func (b *Batcher) Region(region string) *batchRegion {
 }
 
 // Lookup looks up the id and returns the league response once batched and constructed
-func (b *Batcher) Lookup(id models.SummonerID) ([]*riotclient.LeagueDto, error) {
+func (b *Batcher) Lookup(id models.SummonerID) ([]*riot.LeagueDto, error) {
 	res, err := b.Region(id.Region).subscribe(id)
 	if err != nil {
 		return nil, err

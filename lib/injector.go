@@ -6,7 +6,7 @@ import (
 	"github.com/simplyianm/bacchus/db"
 	"github.com/simplyianm/bacchus/processor"
 	"github.com/simplyianm/bacchus/rank"
-	"github.com/simplyianm/bacchus/riotclient"
+	"github.com/simplyianm/bacchus/riot"
 	"github.com/simplyianm/inject"
 	"github.com/simplyianm/keypool"
 )
@@ -29,7 +29,7 @@ func NewInjector() inject.Injector {
 	injector.Map(keys)
 
 	// Create a client for Riot
-	_, err := injector.ApplyMap(riotclient.New())
+	_, err := injector.ApplyMap(riot.New())
 	if err != nil {
 		logger.Fatalf("Could not inject riot client: %v", err)
 	}

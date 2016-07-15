@@ -6,15 +6,15 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/simplyianm/bacchus/db"
 	"github.com/simplyianm/bacchus/models"
-	"github.com/simplyianm/bacchus/riotclient"
+	"github.com/simplyianm/bacchus/riot"
 )
 
 // Queues is the processor for queues.
 type Summoners struct {
-	Riot     *riotclient.RiotClient `inject:"t"`
-	Logger   *logrus.Logger         `inject:"t"`
-	Matches  *Matches               `inject:"t"`
-	Rankings *db.RankingsDAO        `inject:"t"`
+	Riot     *riot.Client    `inject:"t"`
+	Logger   *logrus.Logger  `inject:"t"`
+	Matches  *Matches        `inject:"t"`
+	Rankings *db.RankingsDAO `inject:"t"`
 	c        chan models.SummonerID
 	exists   map[models.SummonerID]bool
 }

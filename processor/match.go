@@ -8,16 +8,16 @@ import (
 	"github.com/simplyianm/bacchus/db"
 	"github.com/simplyianm/bacchus/models"
 	"github.com/simplyianm/bacchus/rank"
-	"github.com/simplyianm/bacchus/riotclient"
+	"github.com/simplyianm/bacchus/riot"
 )
 
 // Matches is the processor for matches.
 type Matches struct {
-	Riot      *riotclient.RiotClient `inject:"t"`
-	Logger    *logrus.Logger         `inject:"t"`
-	Summoners *Summoners             `inject:"t"`
-	Matches   *db.MatchesDAO         `inject:"t"`
-	Ranks     *rank.LookupService    `inject:"t"`
+	Riot      *riot.Client        `inject:"t"`
+	Logger    *logrus.Logger      `inject:"t"`
+	Summoners *Summoners          `inject:"t"`
+	Matches   *db.MatchesDAO      `inject:"t"`
+	Ranks     *rank.LookupService `inject:"t"`
 	c         chan models.MatchID
 	cutoff    models.Rank
 }
@@ -71,7 +71,7 @@ func (m *Matches) process(id models.MatchID) {
 
 	// Ignore non-ranked
 	m.Logger.Infof("Checking correct queue for %s", id.String())
-	if res.QueueType != riotclient.QueueSolo5x5 && res.QueueType != riotclient.QueuePremade5x5 && res.QueueType != riotclient.QueueTeamBuilderDraftRanked5x5 {
+	if res.QueueType != riot.QueueSolo5x5 && res.QueueType != riot.QueuePremade5x5 && res.QueueType != riot.QueueTeamBuilderDraftRanked5x5 {
 		m.Logger.Infof("Wrong queue for %s: %s", id.String(), res.QueueType)
 		return
 	}
