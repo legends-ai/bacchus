@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/simplyianm/bacchus/lib"
-	"github.com/simplyianm/bacchus/models"
 	"github.com/simplyianm/bacchus/processor"
 )
 
@@ -26,6 +25,5 @@ func startProcessors(s *processor.Summoners, m *processor.Matches, logger *logru
 		logger.Infof("Starting match processor %d", i)
 		go m.Start()
 	}
-	// Offer Aditi
-	s.Offer(models.SummonerID{"na", 32875076})
+	s.Seed()
 }

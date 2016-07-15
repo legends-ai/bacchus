@@ -4,17 +4,19 @@ import (
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/simplyianm/bacchus/db"
 	"github.com/simplyianm/bacchus/models"
 	"github.com/simplyianm/bacchus/riotclient"
 )
 
 // Queues is the processor for queues.
 type Summoners struct {
-	Riot    *riotclient.RiotClient `inject:"t"`
-	Logger  *logrus.Logger         `inject:"t"`
-	Matches *Matches               `inject:"t"`
-	c       chan models.SummonerID
-	exists  map[models.SummonerID]bool
+	Riot     *riotclient.RiotClient `inject:"t"`
+	Logger   *logrus.Logger         `inject:"t"`
+	Matches  *Matches               `inject:"t"`
+	Rankings *db.RankingsDAO        `inject:"t"`
+	c        chan models.SummonerID
+	exists   map[models.SummonerID]bool
 }
 
 // NewSummoners creates a new processor.Summoners.
@@ -42,6 +44,17 @@ func (s *Summoners) Start() {
 		}
 		s.process(id)
 	}
+}
+
+// Seed adds summoners from the database.
+func (s *Summoners) Seed() {
+	// TODO(igm): fuck aditi
+	s.pradSeed()
+}
+
+// pradSeed seeds Aditi.
+func (s *Summoners) pradSeed() {
+	s.Offer(models.SummonerID{"na", 32875076})
 }
 
 func (s *Summoners) process(id models.SummonerID) {
