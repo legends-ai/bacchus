@@ -49,3 +49,12 @@ func (a *RankingsDAO) Insert(id models.SummonerID, r models.Ranking) error {
 func (a *RankingsDAO) Update(id models.SummonerID, r models.Ranking) error {
 	return a.Session.Query(updateRankingQuery, r.UDTSet(), r.Rank.ToNumber(), id.String()).Exec()
 }
+
+// Upsert updates or inserts a ranking based on if it exists or not.
+func (d *RankingsDAO) Upsert(id models.SummonerID, r models.Ranking, exists bool) error {
+	if exists {
+		return d.Update(id, r)
+	} else {
+		return d.Insert(id, r)
+	}
+}

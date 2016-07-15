@@ -98,8 +98,10 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 	}
 
 	ls.Logger.Infof("Found rank of %d: %s %s (%d %x)", id.ID, tier, entry.Division, rank.ToNumber(), rank.ToNumber())
-	// asynchronously update cassandra
-	go ls.updateCassandra(id, models.Ranking{t, *rank}, exists)
+
+	// Update updated ranking
+	go ls.updateRanking(id, models.Ranking{t, *rank}, exists)
+
 	return rank, nil
 }
 
@@ -122,15 +124,9 @@ func (ls *LookupService) lookupCassandra(id models.SummonerID, t time.Time) (*mo
 	return nil, true, nil
 }
 
-// updateCassandra updates cassandra with the given ranking.
-func (ls *LookupService) updateCassandra(id models.SummonerID, r models.Ranking, exists bool) {
-	if exists {
-		if err := ls.Rankings.Update(id, r); err != nil {
-			ls.Logger.Errorf("Error updating ranking: %v", err)
-		}
-	} else {
-		if err := ls.Rankings.Insert(id, r); err != nil {
-			ls.Logger.Errorf("Error inserting ranking: %v", err)
-		}
+// updateRanking updates Athena with the given ranking.
+func (ls *LookupService) updateRanking(id models.SummonerID, r models.Ranking, exists bool) {
+	if err := ls.Rankings.Upsert(id, r, exists); err != nil {
+		ls.Logger.Errorf("Error updating ranking: %v", err)
 	}
 }
