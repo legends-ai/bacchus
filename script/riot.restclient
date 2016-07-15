@@ -1,0 +1,30 @@
+# Riot API example requests
+# To make full use of this document, use Emacs with the `restclient` package.
+
+:region = na
+:base = https://:region.api.pvp.net
+:baselol = :base/api/lol/:region
+
+# Featured games
+GET :base/observer-mode/rest/featured
+Riot-Region: :region
+
+# Summoner info 
+:name = Aditi
+GET :baselol/v1.4/summoner/by-name/:name
+Riot-Region: :region
+
+# Summoner recent games
+:summonerId = 32875076
+GET :baselol/v1.3/game/by-summoner/:summonerId/recent
+Riot-Region: :region
+
+# Match
+:matchId = 2203515792
+GET :baselol/v2.2/match/:matchId
+Riot-Region: :region
+
+# League
+:summonerId = 39849961
+GET :baselol/v2.5/league/by-summoner/:summonerId
+Riot-Region: :region
