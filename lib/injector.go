@@ -46,6 +46,12 @@ func NewInjector() inject.Injector {
 	injector.ApplyMap(&db.MatchesDAO{})
 	injector.ApplyMap(&db.RankingsDAO{})
 
+	// Load batcher
+	_, err = injector.ApplyMap(rank.NewBatcher())
+	if err != nil {
+		logger.Fatalf("Could not inject batcher: %v", err)
+	}
+
 	// Load lookup service
 	_, err = injector.ApplyMap(&rank.LookupService{})
 	if err != nil {

@@ -19,6 +19,7 @@ type LookupService struct {
 	Logger   *logrus.Logger         `inject:"t"`
 	Config   *config.AppConfig      `inject:"t"`
 	Rankings *db.RankingsDAO        `inject:"t"`
+	Batcher  *Batcher               `inject:"t"`
 }
 
 // Lookup looks up the given ids for a time and returns a rank.
@@ -59,15 +60,8 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 	}
 	// not in cassandra, do api lookup
 	ls.Logger.Infof("Expired rank for %s, performing API lookup", id.String())
-	r := ls.Riot.Region(id.Region)
-	// TODO(igm): batch id lookups. we can fit a lot of these in a URI.
-	res, err := r.League([]string{strconv.Itoa(id.ID)})
-	if err != nil {
-		return nil, err
-	}
+	dtos, err := ls.Batcher.Lookup(id)
 
-	// Find correct DTO of player
-	dtos := res[strconv.Itoa(id.ID)]
 	var dto *riotclient.LeagueDto
 	for _, x := range dtos {
 		if x.Queue == riotclient.QueueSolo5x5 {

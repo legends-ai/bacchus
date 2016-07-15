@@ -17,6 +17,7 @@ const batchSize = 20
 type subscription struct {
 	id models.SummonerID
 	c  chan riotclient.LeagueResponse
+	e  chan error
 }
 
 // A batch for a region.
@@ -46,6 +47,11 @@ func (b *batchRegion) batch() {
 		res, err := b.r.League(lookup)
 		if err != nil {
 			b.b.Logger.Errorf("Error batching: %v", err)
+			for _, s := range subs {
+				s.e <- err
+				close(s.c)
+			}
+			return
 		}
 
 		// return results
@@ -57,14 +63,19 @@ func (b *batchRegion) batch() {
 }
 
 // subscribe subscribes to the response generated from looking up an id.
-func (b *batchRegion) subscribe(id models.SummonerID) riotclient.LeagueResponse {
+func (b *batchRegion) subscribe(id models.SummonerID) (riotclient.LeagueResponse, error) {
 	sub := &subscription{
 		id: id,
 		c:  make(chan riotclient.LeagueResponse),
+		e:  make(chan error),
 	}
 	b.subs <- sub
-	res := <-sub.c
-	return res
+	select {
+	case res := <-sub.c:
+		return res, nil
+	case err := <-sub.e:
+		return nil, err
+	}
 }
 
 // Batcher batches ranking lookups from Riot.
@@ -75,6 +86,13 @@ type Batcher struct {
 
 	batchers map[string]*batchRegion
 	mu       sync.Mutex
+}
+
+// NewBatcher constructs a new batcher for rank lookups.
+func NewBatcher() *Batcher {
+	return &Batcher{
+		batchers: map[string]*batchRegion{},
+	}
 }
 
 // Region is a batching region.
@@ -95,7 +113,10 @@ func (b *Batcher) Region(region string) *batchRegion {
 }
 
 // Lookup looks up the id and returns the league response once batched and constructed
-func (b *Batcher) Lookup(id models.SummonerID) []*riotclient.LeagueDto {
-	res := b.Region(id.Region).subscribe(id)
-	return res[strconv.Itoa(id.ID)]
+func (b *Batcher) Lookup(id models.SummonerID) ([]*riotclient.LeagueDto, error) {
+	res, err := b.Region(id.Region).subscribe(id)
+	if err != nil {
+		return nil, err
+	}
+	return res[strconv.Itoa(id.ID)], nil
 }
