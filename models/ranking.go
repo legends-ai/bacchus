@@ -18,8 +18,8 @@ func (r Ranking) UDTSet() []RankingUDT {
 
 // RankingUDT is the UDT for a ranking.
 type RankingUDT struct {
-	Time time.Time
-	Rank uint32
+	Time time.Time `cql:"time"`
+	Rank uint32    `cql:"rank"`
 }
 
 // RankingList is a list of rankings.
