@@ -33,7 +33,8 @@ We may have to prune the rankings table every so often.
 CREATE TABLE IF NOT EXISTS athena.rankings (
   id text,
   rankings set<frozen<athena.ranking>>,
-  PRIMARY KEY(id)
+  rank bigint,
+  PRIMARY KEY(id, rank)
 );
 #+END_SRC
 
