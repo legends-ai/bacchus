@@ -9,6 +9,7 @@ import (
 )
 
 func TestRankingAtTime(t *testing.T) {
+	id := SummonerID{}
 	for i, test := range []struct {
 		Rankings []*Ranking
 		Time     time.Time
@@ -17,9 +18,9 @@ func TestRankingAtTime(t *testing.T) {
 		// Middle should use middle
 		{
 			Rankings: []*Ranking{
-				{parseTime("2016-01-01"), Rank{10, 10}},
-				{parseTime("2016-02-01"), Rank{10, 20}},
-				{parseTime("2016-03-01"), Rank{10, 40}},
+				{id, parseTime("2016-01-01"), Rank{10, 10}},
+				{id, parseTime("2016-02-01"), Rank{10, 20}},
+				{id, parseTime("2016-03-01"), Rank{10, 40}},
 			},
 			Time:     parseTime("2016-02-10"),
 			Expected: 1,
@@ -27,9 +28,9 @@ func TestRankingAtTime(t *testing.T) {
 		// After should use the last ranking
 		{
 			Rankings: []*Ranking{
-				{parseTime("2016-01-01"), Rank{10, 10}},
-				{parseTime("2016-02-01"), Rank{10, 20}},
-				{parseTime("2016-03-01"), Rank{10, 40}},
+				{id, parseTime("2016-01-01"), Rank{10, 10}},
+				{id, parseTime("2016-02-01"), Rank{10, 20}},
+				{id, parseTime("2016-03-01"), Rank{10, 40}},
 			},
 			Time:     parseTime("2017-02-10"),
 			Expected: 2,
@@ -37,9 +38,9 @@ func TestRankingAtTime(t *testing.T) {
 		// Before should use the first ranking
 		{
 			Rankings: []*Ranking{
-				{parseTime("2016-01-01"), Rank{10, 10}},
-				{parseTime("2016-02-01"), Rank{10, 20}},
-				{parseTime("2016-03-01"), Rank{10, 40}},
+				{id, parseTime("2016-01-01"), Rank{10, 10}},
+				{id, parseTime("2016-02-01"), Rank{10, 20}},
+				{id, parseTime("2016-03-01"), Rank{10, 40}},
 			},
 			Time:     parseTime("2011-02-10"),
 			Expected: 0,
@@ -47,9 +48,9 @@ func TestRankingAtTime(t *testing.T) {
 		// Before first ranking
 		{
 			Rankings: []*Ranking{
-				{parseTime("2016-01-01"), Rank{10, 10}},
-				{parseTime("2016-02-01"), Rank{10, 20}},
-				{parseTime("2016-03-01"), Rank{10, 40}},
+				{id, parseTime("2016-01-01"), Rank{10, 10}},
+				{id, parseTime("2016-02-01"), Rank{10, 20}},
+				{id, parseTime("2016-03-01"), Rank{10, 40}},
 			},
 			Time:     parseTime("2016-01-10"),
 			Expected: 0,
@@ -57,9 +58,9 @@ func TestRankingAtTime(t *testing.T) {
 		// Sort properly
 		{
 			Rankings: []*Ranking{
-				{parseTime("2016-03-01"), Rank{10, 40}},
-				{parseTime("2016-01-01"), Rank{10, 10}},
-				{parseTime("2016-02-01"), Rank{10, 20}},
+				{id, parseTime("2016-03-01"), Rank{10, 40}},
+				{id, parseTime("2016-01-01"), Rank{10, 10}},
+				{id, parseTime("2016-02-01"), Rank{10, 20}},
 			},
 			Time:     parseTime("2016-02-10"),
 			Expected: 2,
