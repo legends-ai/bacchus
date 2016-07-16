@@ -1,14 +1,15 @@
 package db
 
 import (
+	"time"
+
 	"github.com/gocql/gocql"
 	"github.com/simplyianm/bacchus/models"
 )
 
 const (
-	rankingsQuery      = `SELECT rankings FROM rankings WHERE id = ?`
-	insertRankingQuery = `INSERT INTO rankings (id, rankings, rank) VALUES (?, ?, ?)`
-	updateRankingQuery = `UPDATE rankings SET rankings = rankings + ? WHERE id = ?`
+	rankingsQuery      = `SELECT time, rank FROM rankings WHERE id = ?`
+	insertRankingQuery = `INSERT INTO rankings (id, time, rank) VALUES (?, ?, ?)`
 	aboveRankQuery     = `SELECT id FROM rankings WHERE rank >= ? LIMIT ? ALLOW FILTERING`
 )
 
@@ -20,15 +21,18 @@ type RankingsDAO struct {
 
 // Get grabs all rankings of a summoner.
 func (a *RankingsDAO) Get(id models.SummonerID) (*models.RankingList, error) {
-	var rankings []models.RankingUDT
-	if err := a.Session.Query(rankingsQuery, id.String()).Scan(&rankings); err != nil && err != gocql.ErrNotFound {
-		return nil, err
+	var rankings []*models.Ranking
+	iter := a.Session.Query(rankingsQuery, id.String()).Iter()
+	var t time.Time
+	var r models.Rank
+	for iter.Scan(&t, &r) {
+		rankings = append(rankings, &models.Ranking{
+			ID:   id,
+			Time: t,
+			Rank: r,
+		})
 	}
-	var ret []*models.Ranking
-	for _, ranking := range rankings {
-		ret = append(ret, ranking.ToRanking())
-	}
-	return models.NewRankingList(ret), nil
+	return models.NewRankingList(rankings), nil
 }
 
 // AboveRank gets all summoner ids above a given rank with a limit.
@@ -46,21 +50,7 @@ func (r *RankingsDAO) AboveRank(rank models.Rank, limit int) ([]models.SummonerI
 	return ret, nil
 }
 
-// Insert stores an Athena ranking row for a new summoner.
-func (a *RankingsDAO) Insert(id models.SummonerID, r models.Ranking) error {
-	return a.Session.Query(insertRankingQuery, id.String(), r.UDTSet(), r.Rank.ToNumber()).Exec()
-}
-
-// Update updates the Athena ranking of the given summoner with the given ranking.
-func (a *RankingsDAO) Update(id models.SummonerID, r models.Ranking) error {
-	return a.Session.Query(updateRankingQuery, r.UDTSet(), r.Rank.ToNumber(), id.String()).Exec()
-}
-
-// Upsert updates or inserts a ranking based on if it exists or not.
-func (d *RankingsDAO) Upsert(id models.SummonerID, r models.Ranking, exists bool) error {
-	if exists {
-		return d.Update(id, r)
-	} else {
-		return d.Insert(id, r)
-	}
+// Insert stores an Athena ranking row for a summoner.
+func (a *RankingsDAO) Insert(r models.Ranking) error {
+	return a.Session.Query(insertRankingQuery, r.ID.String(), r.Time, r.Rank.ToNumber()).Exec()
 }

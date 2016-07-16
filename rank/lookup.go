@@ -51,7 +51,7 @@ func (ls *LookupService) Lookup(ids []models.SummonerID, t time.Time) map[models
 
 func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank, error) {
 	// check cassandra cache
-	rank, exists, err := ls.lookupCassandra(id, t)
+	rank, err := ls.lookupCassandra(id, t)
 	if err != nil {
 		return nil, err
 	}
@@ -91,12 +91,15 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 	if err != nil {
 		return nil, fmt.Errorf("invalid rank: %v", err)
 	}
-	ranking := models.Ranking{t, *rank}
+	ranking := models.Ranking{
+		ID:   id,
+		Time: t,
+		Rank: *rank,
+	}
 
 	ls.Logger.Infof("Found rank of %d: %s %s (%d %x)", id.ID, tier, entry.Division, rank.ToNumber(), rank.ToNumber())
 
-	// Update updated ranking asynchronously
-	go ls.updateRanking(id, ranking, exists)
+	go ls.Rankings.Insert(ranking)
 
 	return rank, nil
 }
@@ -104,25 +107,18 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 // lookupCassandra looks up the summoner rank in Cassandra.
 // Returns the rank if it exists, whether the rank is already in Cassandra,
 // and an error if it exists.
-func (ls *LookupService) lookupCassandra(id models.SummonerID, t time.Time) (*models.Rank, bool, error) {
+func (ls *LookupService) lookupCassandra(id models.SummonerID, t time.Time) (*models.Rank, error) {
 	// check cassandra cache
 	res, err := ls.Rankings.Get(id)
 	if err != nil {
-		return nil, false, fmt.Errorf("could not lookup Cassandra: %v", err)
+		return nil, fmt.Errorf("could not lookup Cassandra: %v", err)
 	}
 	ranking := res.AtTime(t)
 	if ranking == nil {
-		return nil, false, nil
+		return nil, nil
 	}
 	if ranking != res.Latest() || time.Now().Sub(ranking.Time) < ls.Config.RankExpiry {
-		return &ranking.Rank, true, nil
+		return &ranking.Rank, nil
 	}
-	return nil, true, nil
-}
-
-// updateRanking updates Athena with the given ranking.
-func (ls *LookupService) updateRanking(id models.SummonerID, r models.Ranking, exists bool) {
-	if err := ls.Rankings.Upsert(id, r, exists); err != nil {
-		ls.Logger.Errorf("Error updating ranking: %v", err)
-	}
+	return nil, nil
 }
