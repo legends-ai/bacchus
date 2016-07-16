@@ -28,3 +28,6 @@ We should create a Cassandra schema migration tool.
 
 ** Who owns Cassandra?
 Our schemas should be part of Athena if Cassandra is considered to be part of Athena.
+
+** Improve logging
+Our logging is shit. We should figure out what we should be logging.
