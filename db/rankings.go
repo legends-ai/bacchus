@@ -35,9 +35,13 @@ func (a *RankingsDAO) Get(id models.SummonerID) (*models.RankingList, error) {
 func (r *RankingsDAO) AboveRank(rank models.Rank, limit int) ([]models.SummonerID, error) {
 	var ret []models.SummonerID
 	it := r.Session.Query(aboveRankQuery, rank.ToNumber(), limit).Iter()
-	var cur models.SummonerID
+	var cur string
 	for it.Scan(&cur) {
-		ret = append(ret, cur)
+		id, err := models.SummonerIDFromString(cur)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, id)
 	}
 	return ret, nil
 }

@@ -43,7 +43,9 @@ func (m *Matches) Offer(id models.MatchID) {
 		// don't scrape duplicate matches
 		return
 	}
-	m.c <- id
+	go func(id models.MatchID) {
+		m.c <- id
+	}(id)
 }
 
 // Start starts processing matches.

@@ -32,7 +32,9 @@ func (s *Summoners) Offer(id models.SummonerID) {
 	if s.exists[id] {
 		return
 	}
-	s.c <- id
+	go func(id models.SummonerID) {
+		s.c <- id
+	}(id)
 }
 
 // Start starts processing summoners.
