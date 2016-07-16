@@ -48,8 +48,9 @@ func (b *batchRegion) batch() {
 				s.e <- err
 				close(s.c)
 				close(s.e)
+				subs = []*subscription{}
 			}
-			return
+			continue
 		}
 
 		// return results
@@ -57,6 +58,7 @@ func (b *batchRegion) batch() {
 			s.c <- res
 			close(s.c)
 			close(s.e)
+			subs = []*subscription{}
 		}
 	}
 }

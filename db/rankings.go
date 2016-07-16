@@ -34,8 +34,10 @@ func (a *RankingsDAO) Get(id models.SummonerID) (*models.RankingList, error) {
 // AboveRank gets all summoner ids above a given rank with a limit.
 func (r *RankingsDAO) AboveRank(rank models.Rank, limit int) ([]models.SummonerID, error) {
 	var ret []models.SummonerID
-	if err := r.Session.Query(aboveRankQuery, rank.ToNumber(), limit).Scan(&ret); err != nil && err != gocql.ErrNotFound {
-		return nil, err
+	it := r.Session.Query(aboveRankQuery, rank.ToNumber(), limit).Iter()
+	var cur models.SummonerID
+	for it.Scan(&cur) {
+		ret = append(ret, cur)
 	}
 	return ret, nil
 }

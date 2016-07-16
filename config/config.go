@@ -31,7 +31,7 @@ type AppConfig struct {
 	RankExpiry time.Duration `envconfig:"rank_expiry" default:"168h"`
 
 	// BatchSize is the size of a batch when performing rank lookups.
-	BatchSize int `envconfig:"batch_size" default:"20"`
+	BatchSize int `envconfig:"batch_size" default:"8"`
 }
 
 // Fetch fetches the config from env vars
