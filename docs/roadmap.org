@@ -8,3 +8,23 @@ We currently use a large in-memory set to track which summoners have not yet bee
 
 ** Allow retries
 We do not have a retry mechanism in place. We should use something like exponential backoff. This compromises the validity of our data, as we can be missing random pieces of data.
+
+** Move Bacchus to the cloud with a cron job
+Right now we manually run Bacchus on a personal computer. It would be better if this job was automated.
+
+** When is Bacchus done?
+Is this when all queues are empty? Or maybe when nothing has been processed in the past 5 seconds? We have no termination condition.
+
+** Improve test coverage
+Our test coverage is shit because I'm too dumb to know how to test highly concurrent code. We may need to refactor some sections to make things easy to test.
+
+** Extract riot client into a common library
+Apollo will eventually have to call Riot's API. It might make a lot of sense to share code.
+
+We can share much more than this.
+
+** Create schema migration tools
+We should create a Cassandra schema migration tool.
+
+** Who owns Cassandra?
+Our schemas should be part of Athena if Cassandra is considered to be part of Athena.
