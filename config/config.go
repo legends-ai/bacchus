@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
@@ -59,5 +60,5 @@ func (a *AppConfig) Validate() error {
 }
 
 func isValidKey(key string) bool {
-	return uuidMatcher.MatchString(key)
+	return uuidMatcher.MatchString(key) || strings.HasPrefix(key, "RGAPI")
 }
