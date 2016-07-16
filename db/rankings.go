@@ -8,7 +8,7 @@ import (
 const (
 	rankingsQuery      = `SELECT rankings FROM rankings WHERE id = ?`
 	insertRankingQuery = `INSERT INTO rankings (id, rankings, rank) VALUES (?, ?, ?)`
-	updateRankingQuery = `UPDATE rankings SET rankings = rankings + ? AND rank = ? WHERE id = ?`
+	updateRankingQuery = `UPDATE rankings SET rankings = rankings + ?, rank = ? WHERE id = ?`
 	aboveRankQuery     = `SELECT id FROM rankings WHERE rank >= ? LIMIT ? ALLOW FILTERING`
 )
 
