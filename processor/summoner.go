@@ -2,6 +2,7 @@ package processor
 
 import (
 	"strconv"
+	"sync"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/simplyianm/bacchus/db"
@@ -17,6 +18,7 @@ type Summoners struct {
 	Rankings *db.RankingsDAO `inject:"t"`
 	c        chan models.SummonerID
 	exists   map[models.SummonerID]bool
+	existsMu sync.RWMutex
 }
 
 // NewSummoners creates a new processor.Summoners.
@@ -29,6 +31,8 @@ func NewSummoners() *Summoners {
 
 // Offer offers a summoner to the queue which may accept it.
 func (s *Summoners) Offer(id models.SummonerID) {
+	s.existsMu.RLock()
+	defer s.existsMu.RUnlock()
 	if s.exists[id] {
 		return
 	}
@@ -73,6 +77,9 @@ func (s *Summoners) process(id models.SummonerID) {
 		s.Logger.Errorf("Could not fetch games of summoner %s in region %s: %v", id.ID, id.Region, err)
 		return
 	}
+	s.existsMu.Lock()
+	s.exists[id] = true
+	s.existsMu.Unlock()
 	for _, game := range res.Games {
 		s.Matches.Offer(models.MatchID{
 			Region: id.Region,
