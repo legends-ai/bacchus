@@ -26,7 +26,7 @@ type Matches struct {
 func NewMatches() *Matches {
 	cutoff, _ := models.ParseRank(models.TierPlatinum, models.DivisionV)
 	return &Matches{
-		c:      make(chan models.MatchID),
+		c:      make(chan models.MatchID, 1E7),
 		cutoff: *cutoff,
 	}
 }
@@ -43,9 +43,7 @@ func (m *Matches) Offer(id models.MatchID) {
 		// don't scrape duplicate matches
 		return
 	}
-	go func(id models.MatchID) {
-		m.c <- id
-	}(id)
+	m.c <- id
 }
 
 // Start starts processing matches.

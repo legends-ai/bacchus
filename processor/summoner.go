@@ -22,7 +22,7 @@ type Summoners struct {
 // NewSummoners creates a new processor.Summoners.
 func NewSummoners() *Summoners {
 	return &Summoners{
-		c:      make(chan models.SummonerID),
+		c:      make(chan models.SummonerID, 1E7),
 		exists: map[models.SummonerID]bool{},
 	}
 }
@@ -32,9 +32,7 @@ func (s *Summoners) Offer(id models.SummonerID) {
 	if s.exists[id] {
 		return
 	}
-	go func(id models.SummonerID) {
-		s.c <- id
-	}(id)
+	s.c <- id
 }
 
 // Start starts processing summoners.
