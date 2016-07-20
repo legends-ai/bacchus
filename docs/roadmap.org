@@ -34,3 +34,6 @@ Our schemas should be part of Athena if Cassandra is considered to be part of At
 
 ** Improve logging
 Our logging is shit. We should figure out what we should be logging.
+
+** Better config
+We have way too many random constants. This should be in config and centralized.
