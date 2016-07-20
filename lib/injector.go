@@ -58,6 +58,15 @@ func NewInjector() inject.Injector {
 		logger.Fatalf("Could not inject lookup service: %v", err)
 	}
 
+	// Load processor metrics
+	_, err = injector.ApplyMap(processor.Metrics{
+		SummonerRate: 1,
+		MatchRate:    1,
+	})
+	if err != nil {
+		logger.Fatalf("Could not inject processor: %v", err)
+	}
+
 	// Load summoner and match processors
 	logger.Info("Loading processors")
 	s := processor.NewSummoners()
