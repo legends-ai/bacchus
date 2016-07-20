@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sync"
 
 	"github.com/simplyianm/keypool"
 )
@@ -17,8 +18,9 @@ const (
 
 // Client stores API clients.
 type Client struct {
-	Keys    *keypool.Keypool `inject:"t"`
-	clients map[string]*API
+	Keys      *keypool.Keypool `inject:"t"`
+	clients   map[string]*API
+	clientsMu sync.RWMutex
 }
 
 // New creates a new Client.
@@ -30,7 +32,9 @@ func New() *Client {
 
 // Region gets an API client for the given region.
 func (rc *Client) Region(region string) *API {
+	rc.clientsMu.RLock()
 	inst, ok := rc.clients[region]
+	rc.clientsMu.RUnlock()
 	if !ok {
 		base := fmt.Sprintf(riotBaseTpl, region)
 		inst = &API{
@@ -39,7 +43,9 @@ func (rc *Client) Region(region string) *API {
 			apiLol:  fmt.Sprintf("%s/api/lol/%s", base, region),
 			rc:      rc,
 		}
+		rc.clientsMu.Lock()
 		rc.clients[region] = inst
+		rc.clientsMu.Unlock()
 	}
 	return inst
 }
