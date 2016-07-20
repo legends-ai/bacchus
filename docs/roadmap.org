@@ -7,6 +7,8 @@ There are a number of things I want to implement eventually in Bacchus that do n
 ** Hold summoner set state externally
 We currently use a large in-memory set to track which summoners have not yet been processed. This could work better as a Redis set or some sort of persistent data structure. This will allow us to restart the tool in the middle of scraping and prevent a lot of redundant requests.
 
+Alternative: use a flatfile, embedded database like LevelDB. What the hell was I smoking?
+
 ** Allow retries
 We do not have a retry mechanism in place. We should use something like exponential backoff. This compromises the validity of our data, as we can be missing random pieces of data.
 
