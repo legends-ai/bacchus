@@ -38,6 +38,9 @@ type MatchResponsePlayer struct {
 func (r *API) Match(matchID string) (*MatchResponse, error) {
 	resp, err := r.fetchWithParams(
 		fmt.Sprintf("%s/v2.2/match/%s", r.apiLol, matchID), url.Values{"includeTimeline": []string{"true"}})
+	if err != nil {
+		return nil, err
+	}
 	var m MatchResponse
 	defer resp.Body.Close()
 	s, err := ioutil.ReadAll(resp.Body)
