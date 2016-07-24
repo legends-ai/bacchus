@@ -20,6 +20,9 @@ type Game struct {
 func (r *API) Game(summonerID string) (*GameResponse, error) {
 	resp, err := r.fetch(
 		fmt.Sprintf("%s/v1.3/game/by-summoner/%s/recent", r.apiLol, summonerID))
+	if err != nil {
+		return nil, err
+	}
 	var g GameResponse
 	defer resp.Body.Close()
 	err = json.NewDecoder(resp.Body).Decode(&g)
