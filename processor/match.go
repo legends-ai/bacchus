@@ -57,6 +57,18 @@ func (m *Matches) Start() {
 	}
 }
 
+func (m *Matches) minifyJSON(data string) (string, error) {
+	var min interface{}
+	if err := json.Unmarshal([]byte(data), &min); err != nil {
+		return "", err
+	}
+	d, err := json.Marshal(min)
+	if err != nil {
+		return "", err
+	}
+	return string(d), nil
+}
+
 func (m *Matches) process(id models.MatchID) {
 	m.Logger.Infof("Processing match %s", id.String())
 	region := m.Riot.Region(id.Region)
@@ -113,16 +125,4 @@ func (m *Matches) process(id models.MatchID) {
 		Patch: res.MatchVersion,
 		Rank:  rank,
 	})
-}
-
-func (m *Matches) minifyJSON(data string) (string, error) {
-	var min interface{}
-	if err := json.Unmarshal([]byte(data), &min); err != nil {
-		return "", err
-	}
-	d, err := json.Marshal(min)
-	if err != nil {
-		return "", err
-	}
-	return string(d), nil
 }
