@@ -3,8 +3,8 @@ package db
 import (
 	"time"
 
+	"github.com/asunaio/bacchus/models"
 	"github.com/gocql/gocql"
-	"github.com/simplyianm/bacchus/models"
 )
 
 const (

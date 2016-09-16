@@ -2,7 +2,7 @@ package processor
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/simplyianm/bacchus/models"
+	"github.com/asunaio/bacchus/models"
 )
 
 // Metrics records processed summoners and matches and logs progress.

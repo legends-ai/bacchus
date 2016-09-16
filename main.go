@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/simplyianm/bacchus/lib"
-	"github.com/simplyianm/bacchus/processor"
+	"github.com/asunaio/bacchus/lib"
+	"github.com/asunaio/bacchus/processor"
 )
 
 const (

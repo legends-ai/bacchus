@@ -2,8 +2,8 @@
 package db
 
 import (
+	"github.com/asunaio/bacchus/config"
 	"github.com/gocql/gocql"
-	"github.com/simplyianm/bacchus/config"
 )
 
 const keyspace = "athena"

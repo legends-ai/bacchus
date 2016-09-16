@@ -1,4 +1,4 @@
-package: github.com/simplyianm/bacchus
+package: github.com/asunaio/bacchus
 import:
 - package: github.com/kelseyhightower/envconfig
 - package: github.com/gocql/gocql

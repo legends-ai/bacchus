@@ -5,9 +5,9 @@ import (
 	"sync"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/simplyianm/bacchus/config"
-	"github.com/simplyianm/bacchus/models"
-	"github.com/simplyianm/bacchus/riot"
+	"github.com/asunaio/bacchus/config"
+	"github.com/asunaio/bacchus/models"
+	"github.com/asunaio/bacchus/riot"
 )
 
 // subscription is a subscription to later complete.

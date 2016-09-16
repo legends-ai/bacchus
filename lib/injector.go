@@ -2,11 +2,11 @@ package lib
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/simplyianm/bacchus/config"
-	"github.com/simplyianm/bacchus/db"
-	"github.com/simplyianm/bacchus/processor"
-	"github.com/simplyianm/bacchus/rank"
-	"github.com/simplyianm/bacchus/riot"
+	"github.com/asunaio/bacchus/config"
+	"github.com/asunaio/bacchus/db"
+	"github.com/asunaio/bacchus/processor"
+	"github.com/asunaio/bacchus/rank"
+	"github.com/asunaio/bacchus/riot"
 	"github.com/simplyianm/inject"
 	"github.com/simplyianm/keypool"
 )

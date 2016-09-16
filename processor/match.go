@@ -5,10 +5,10 @@ import (
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/simplyianm/bacchus/db"
-	"github.com/simplyianm/bacchus/models"
-	"github.com/simplyianm/bacchus/rank"
-	"github.com/simplyianm/bacchus/riot"
+	"github.com/asunaio/bacchus/db"
+	"github.com/asunaio/bacchus/models"
+	"github.com/asunaio/bacchus/rank"
+	"github.com/asunaio/bacchus/riot"
 )
 
 // Matches is the processor for matches.
