@@ -11,3 +11,6 @@ test:
 
 serve: all
 	./bacchus
+
+docker-build:
+	docker build -t simplyianm/bacchus .
