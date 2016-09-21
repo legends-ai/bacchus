@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	concurrency = 15
+	concurrency = 30
 )
 
 func main() {
