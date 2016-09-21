@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"sync"
 
+	"github.com/asunaio/bacchus/config"
 	"github.com/simplyianm/keypool"
 )
 
@@ -18,6 +19,7 @@ const (
 
 // Client stores API clients.
 type Client struct {
+	Config    *config.AppConfig
 	Keys      *keypool.Keypool `inject:"t"`
 	clients   map[string]*API
 	clientsMu sync.RWMutex
@@ -61,6 +63,7 @@ type API struct {
 // fetchWithParams fetches a path with the given parameters.
 func (r *API) fetchWithParams(path string, params url.Values) (*http.Response, error) {
 	// key := r.rc.Keys.Fetch().Return()
+	key := r.rc.Config.APIKeys[0]
 	params.Set(apiKeyParam, key)
 	url := fmt.Sprintf("%s?%s", path, params.Encode())
 	client := &http.Client{}
