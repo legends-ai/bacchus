@@ -5,5 +5,4 @@ COPY . /go/src/github.com/asunaio/bacchus
 WORKDIR /go/src/github.com/asunaio/bacchus
 
 # Build binary
-RUN rm -f bacchus
 RUN go build .
