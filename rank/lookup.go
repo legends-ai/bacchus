@@ -99,7 +99,9 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 
 	ls.Logger.Infof("Found rank of %d: %s %s (%d %x)", id.ID, tier, entry.Division, rank.ToNumber(), rank.ToNumber())
 
-	go ls.Rankings.Insert(ranking)
+	if err = ls.Rankings.Insert(ranking); err != nil {
+		return nil, fmt.Errorf("error inserting ranking: %v", err)
+	}
 
 	return rank, nil
 }
