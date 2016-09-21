@@ -60,7 +60,7 @@ type API struct {
 
 // fetchWithParams fetches a path with the given parameters.
 func (r *API) fetchWithParams(path string, params url.Values) (*http.Response, error) {
-	key := r.rc.Keys.Fetch().Return()
+	// key := r.rc.Keys.Fetch().Return()
 	params.Set(apiKeyParam, key)
 	url := fmt.Sprintf("%s?%s", path, params.Encode())
 	client := &http.Client{}
