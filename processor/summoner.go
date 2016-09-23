@@ -69,6 +69,7 @@ func (s *Summoners) Seed() {
 
 	// Seed ids
 	if len(ids) == 0 {
+		s.Logger.Info("Database empty; seeding with hardcoded value")
 		// no plat, do alternative seed
 		s.Offer(&apb.SummonerId{
 			Region: apb.Region_NA,
