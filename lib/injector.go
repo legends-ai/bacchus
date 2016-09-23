@@ -59,7 +59,7 @@ func NewInjector() inject.Injector {
 	}
 
 	// Load processor metrics
-	metrics := processor.Metrics{
+	metrics := &processor.Metrics{
 		SummonerRate: 1,
 		MatchRate:    1,
 	}

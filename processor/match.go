@@ -19,6 +19,7 @@ type Matches struct {
 	Summoners *Summoners          `inject:"t"`
 	Matches   *db.MatchesDAO      `inject:"t"`
 	Ranks     *rank.LookupService `inject:"t"`
+	Metrics   *Metrics            `inject:"t"`
 
 	c      chan *apb.MatchId
 	cutoff *apb.Rank

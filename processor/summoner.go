@@ -17,6 +17,7 @@ type Summoners struct {
 	Logger   *logrus.Logger  `inject:"t"`
 	Matches  *Matches        `inject:"t"`
 	Rankings *db.RankingsDAO `inject:"t"`
+	Metrics  *Metrics        `inject:"t"`
 
 	c        chan *apb.SummonerId
 	exists   map[*apb.SummonerId]bool
