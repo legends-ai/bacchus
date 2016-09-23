@@ -69,7 +69,6 @@ func (ls *LookupService) lookup(id *apb.SummonerId) (*apb.Rank, error) {
 		return rank, nil
 	}
 	// not in cassandra, do api lookup
-	ls.Logger.Infof("Expired rank for %s, performing API lookup", id.String())
 	dtos, err := ls.Batcher.Lookup(id)
 
 	var dto *riot.LeagueDto
@@ -113,8 +112,6 @@ func (ls *LookupService) lookup(id *apb.SummonerId) (*apb.Rank, error) {
 		Rank:     rank,
 		Time:     now,
 	}
-
-	ls.Logger.Infof("Found rank of %d: %s %s (%x)", id.Id, tier, entry.Division, models.RankToNumber(rank))
 
 	if err = ls.Rankings.Insert(ranking); err != nil {
 		return nil, fmt.Errorf("error inserting ranking: %v", err)

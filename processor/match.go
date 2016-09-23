@@ -73,21 +73,17 @@ func (m *Matches) minifyJSON(data string) (string, error) {
 }
 
 func (m *Matches) process(id *apb.MatchId) {
-	m.Logger.Infof("Processing match %v", id)
 	region := m.Riot.Region(id.Region)
 
 	// Retrieve match data
 	res, err := region.Match(strconv.Itoa(int(id.Id)))
-	m.Logger.Infof("Fetched match data for %v", id)
 	if err != nil {
 		m.Logger.Errorf("Could not fetch details of match %v: %v", id, err)
 		return
 	}
 
 	// Ignore non-ranked
-	m.Logger.Infof("Checking correct queue for %v", id)
 	if res.QueueType != riot.QueueSolo5x5 && res.QueueType != riot.QueuePremade5x5 && res.QueueType != riot.QueueTeamBuilderDraftRanked5x5 {
-		m.Logger.Infof("Wrong queue for %v: %s", id, res.QueueType)
 		return
 	}
 
@@ -101,7 +97,6 @@ func (m *Matches) process(id *apb.MatchId) {
 	}
 
 	// Get min rank of players
-	m.Logger.Infof("Getting min ranks for %v", id)
 	sums, err := m.Ranks.Lookup(ids)
 	if err != nil {
 		m.Logger.Errorf("Error looking up ranks: %v", err)
@@ -122,8 +117,6 @@ func (m *Matches) process(id *apb.MatchId) {
 	if err != nil {
 		m.Logger.Errorf("Could not minify Riot JSON: %v", err)
 	}
-
-	m.Logger.Infof("Wrote match %v with rank %d", id, models.RankToNumber(rank))
 
 	// Write match to Cassandra
 	m.Matches.Insert(&apb.RawMatch{

@@ -85,8 +85,6 @@ func (s *Summoners) Seed() {
 }
 
 func (s *Summoners) process(id *apb.SummonerId) {
-	s.Logger.Infof("Processing summoner %s", id.String())
-
 	// process the summoner
 	res, err := s.Riot.Region(id.Region).Game(strconv.Itoa(int(id.Id)))
 	if err != nil {
