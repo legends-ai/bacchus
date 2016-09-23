@@ -43,14 +43,16 @@ func (r *API) Match(matchID string) (*MatchResponse, error) {
 	}
 	var m MatchResponse
 	defer resp.Body.Close()
+
 	s, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("Could not read match response: %v", err)
 	}
-	err = json.Unmarshal(s, &m)
-	if err != nil {
+
+	if err = json.Unmarshal(s, &m); err != nil {
 		return nil, fmt.Errorf("Could not unmarshal match response: %v", err)
 	}
+
 	m.RawJSON = string(s)
 	return &m, nil
 }

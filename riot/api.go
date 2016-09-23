@@ -38,13 +38,14 @@ func New() *Client {
 func (rc *Client) Region(region apb.Region) *API {
 	rc.clientsMu.RLock()
 	inst, ok := rc.clients[region]
+	rg := strings.ToLower(apb.Region_name[int32(region)])
 	rc.clientsMu.RUnlock()
 	if !ok {
-		base := fmt.Sprintf(riotBaseTpl, region)
+		base := fmt.Sprintf(riotBaseTpl, rg)
 		inst = &API{
-			Region:  strings.ToLower(apb.Region_name[int32(region)]),
+			Region:  rg,
 			apiBase: base,
-			apiLol:  fmt.Sprintf("%s/api/lol/%s", base, region),
+			apiLol:  fmt.Sprintf("%s/api/lol/%s", base, rg),
 			rc:      rc,
 		}
 		rc.clientsMu.Lock()

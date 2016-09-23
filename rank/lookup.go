@@ -132,6 +132,9 @@ func (ls *LookupService) lookupCassandra(id *apb.SummonerId) (*apb.Rank, error) 
 	if err != nil {
 		return nil, fmt.Errorf("could not lookup Cassandra: %v", err)
 	}
+	if res == nil {
+		return nil, nil
+	}
 
 	// get time
 	t, err := ptypes.Timestamp(res.Time)
