@@ -105,4 +105,6 @@ func (s *Summoners) process(id *apb.SummonerId) {
 			Id:     uint32(game.GameID),
 		})
 	}
+
+	s.Metrics.RecordSummoner(id)
 }

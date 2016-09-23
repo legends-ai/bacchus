@@ -132,4 +132,6 @@ func (m *Matches) process(id *apb.MatchId) {
 		Rank:  rank,
 		Body:  json,
 	})
+
+	m.Metrics.RecordMatch(id)
 }
