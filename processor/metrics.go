@@ -2,7 +2,7 @@ package processor
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/asunaio/bacchus/models"
+	apb "github.com/asunaio/bacchus/gen-go/asuna"
 )
 
 // Metrics records processed summoners and matches and logs progress.
@@ -12,16 +12,17 @@ type Metrics struct {
 	SummonerRate int
 	// MatchRate is the number of processed matches to log a message.
 	MatchRate int
-	sn        int
-	mn        int
-	sc        chan models.SummonerID
-	mc        chan models.MatchID
+
+	sn int
+	mn int
+	sc chan *apb.SummonerId
+	mc chan *apb.MatchId
 }
 
 // Start starts the metrics.
 func (m *Metrics) Start() {
-	m.sc = make(chan models.SummonerID)
-	m.mc = make(chan models.MatchID)
+	m.sc = make(chan *apb.SummonerId)
+	m.mc = make(chan *apb.MatchId)
 	for {
 		select {
 		case id := <-m.sc:
@@ -41,11 +42,11 @@ func (m *Metrics) Start() {
 }
 
 // RecordSummoner records a summoner.
-func (m *Metrics) RecordSummoner(id models.SummonerID) {
+func (m *Metrics) RecordSummoner(id *apb.SummonerId) {
 	m.sc <- id
 }
 
 // RecordMatch records a match.
-func (m *Metrics) RecordMatch(id models.MatchID) {
+func (m *Metrics) RecordMatch(id *apb.MatchId) {
 	m.mc <- id
 }

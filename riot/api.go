@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 
 	"github.com/asunaio/bacchus/config"
+	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/simplyianm/keypool"
 )
 
@@ -21,26 +23,26 @@ const (
 type Client struct {
 	Config    *config.AppConfig `inject:"t"`
 	Keys      *keypool.Keypool  `inject:"t"`
-	clients   map[string]*API
+	clients   map[apb.Region]*API
 	clientsMu sync.RWMutex
 }
 
 // New creates a new Client.
 func New() *Client {
 	return &Client{
-		clients: map[string]*API{},
+		clients: map[apb.Region]*API{},
 	}
 }
 
 // Region gets an API client for the given region.
-func (rc *Client) Region(region string) *API {
+func (rc *Client) Region(region apb.Region) *API {
 	rc.clientsMu.RLock()
 	inst, ok := rc.clients[region]
 	rc.clientsMu.RUnlock()
 	if !ok {
 		base := fmt.Sprintf(riotBaseTpl, region)
 		inst = &API{
-			Region:  region,
+			Region:  strings.ToLower(apb.Region_name[int32(region)]),
 			apiBase: base,
 			apiLol:  fmt.Sprintf("%s/api/lol/%s", base, region),
 			rc:      rc,

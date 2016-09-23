@@ -1,8 +1,10 @@
 package db
 
 import (
-	"github.com/asunaio/bacchus/models"
 	"github.com/gocql/gocql"
+
+	apb "github.com/asunaio/bacchus/gen-go/asuna"
+	"github.com/asunaio/bacchus/models"
 )
 
 const (
@@ -17,7 +19,7 @@ type MatchesDAO struct {
 }
 
 // Exists returns true if a match exists.
-func (m *MatchesDAO) Exists(id models.MatchID) (bool, error) {
+func (m *MatchesDAO) Exists(id *apb.MatchId) (bool, error) {
 	var count int
 	if err := m.Session.Query(hasMatchQuery, id.String()).Scan(&count); err != nil {
 		return false, err
@@ -26,9 +28,10 @@ func (m *MatchesDAO) Exists(id models.MatchID) (bool, error) {
 }
 
 // Insert inserts a match to Cassandra.
-func (a *MatchesDAO) Insert(m *models.Match) error {
+func (a *MatchesDAO) Insert(m *apb.RawMatch) error {
 	return a.Session.Query(
-		insertMatchQuery, m.ID.String(), m.ID.Region,
-		m.Body, m.Rank.ToNumber(), m.Patch,
+		insertMatchQuery, models.StringifyMatchId(m.Id),
+		m.Id.Region, m.Body, models.RankToNumber(m.Rank),
+		m.Patch,
 	).Exec()
 }

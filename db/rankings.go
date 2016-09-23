@@ -1,16 +1,18 @@
 package db
 
 import (
-	"time"
+	"fmt"
 
+	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/models"
 	"github.com/gocql/gocql"
+	"github.com/golang/protobuf/proto"
 )
 
 const (
-	rankingsQuery      = `SELECT time, rank FROM rankings WHERE id = ?`
-	insertRankingQuery = `INSERT INTO rankings (id, time, rank) VALUES (?, ?, ?)`
-	aboveRankQuery     = `SELECT id FROM rankings WHERE rank >= ? LIMIT ? ALLOW FILTERING`
+	rankingsQuery      = `SELECT ranking FROM rankings WHERE id = ?`
+	insertRankingQuery = `INSERT INTO rankings (id, rank, ranking) VALUES (?, ?, ?)`
+	aboveRankQuery     = `SELECT ranking FROM rankings WHERE rank >= ? LIMIT ? ALLOW FILTERING`
 )
 
 // RankingsDAO is a rankings DAO.
@@ -20,37 +22,50 @@ type RankingsDAO struct {
 }
 
 // Get grabs all rankings of a summoner.
-func (a *RankingsDAO) Get(id models.SummonerID) (*models.RankingList, error) {
-	var rankings []*models.Ranking
-	iter := a.Session.Query(rankingsQuery, id.String()).Iter()
-	var t time.Time
-	var r models.Rank
-	for iter.Scan(&t, &r) {
-		rankings = append(rankings, &models.Ranking{
-			ID:   id,
-			Time: t,
-			Rank: r,
-		})
+func (a *RankingsDAO) Get(id *apb.SummonerId) (*apb.Ranking, error) {
+	key := models.StringifySummonerId(id)
+
+	var rawRanking []byte
+	if err := a.Session.Query(rankingsQuery, key).Scan(&rawRanking); err != nil {
+		if err == gocql.ErrNotFound {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("error fetching ranking from Cassandra: %v", err)
 	}
-	return models.NewRankingList(rankings), nil
+
+	var ranking apb.Ranking
+	if err := proto.Unmarshal(rawRanking, &ranking); err != nil {
+		return nil, fmt.Errorf("error unmarshaling ranking: %v", err)
+	}
+
+	return &ranking, nil
 }
 
 // AboveRank gets all summoner ids above a given rank with a limit.
-func (r *RankingsDAO) AboveRank(rank models.Rank, limit int) ([]models.SummonerID, error) {
-	var ret []models.SummonerID
-	it := r.Session.Query(aboveRankQuery, rank.ToNumber(), limit).Iter()
-	var cur string
+func (r *RankingsDAO) AboveRank(rank *apb.Rank, limit int) ([]*apb.SummonerId, error) {
+	var ret []*apb.SummonerId
+	it := r.Session.Query(aboveRankQuery, models.RankToNumber(rank), limit).Iter()
+
+	var cur []byte
 	for it.Scan(&cur) {
-		id, err := models.SummonerIDFromString(cur)
-		if err != nil {
-			return nil, err
+		var ranking apb.Ranking
+		if err := proto.Unmarshal(cur, &ranking); err != nil {
+			return nil, fmt.Errorf("error unmarshaling ranking: %v", err)
 		}
-		ret = append(ret, id)
+		ret = append(ret, ranking.Summoner)
 	}
 	return ret, nil
 }
 
 // Insert stores an Athena ranking row for a summoner.
-func (a *RankingsDAO) Insert(r models.Ranking) error {
-	return a.Session.Query(insertRankingQuery, r.ID.String(), r.Time, r.Rank.ToNumber()).Exec()
+func (a *RankingsDAO) Insert(r *apb.Ranking) error {
+	data, err := proto.Marshal(r)
+	if err != nil {
+		return err
+	}
+	return a.Session.Query(
+		insertRankingQuery,
+		models.StringifySummonerId(r.Summoner),
+		models.RankToNumber(r.Rank), data,
+	).Exec()
 }
