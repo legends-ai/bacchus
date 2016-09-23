@@ -12,6 +12,12 @@ test:
 serve: all
 	./bacchus
 
+genproto:
+	./proto/gen_go.sh
+
+syncproto:
+	cd proto && git pull origin master
+
 docker-build:
 	docker build -t bacchus .
 

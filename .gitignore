@@ -30,3 +30,4 @@ _testmain.go
 .env
 
 vendor/
+gen-go/
