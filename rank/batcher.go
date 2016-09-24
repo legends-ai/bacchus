@@ -6,13 +6,13 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/asunaio/bacchus/config"
-	"github.com/asunaio/bacchus/models"
+	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/riot"
 )
 
 // subscription is a subscription to later complete.
 type subscription struct {
-	id models.SummonerID
+	id *apb.SummonerId
 	c  chan riot.LeagueResponse
 	e  chan error
 }
@@ -39,7 +39,7 @@ func (b *batchRegion) batch() {
 		// Perform batched lookup
 		var lookup []string
 		for _, s := range subs {
-			lookup = append(lookup, strconv.Itoa(s.id.ID))
+			lookup = append(lookup, strconv.Itoa(int(s.id.Id)))
 		}
 		res, err := b.r.League(lookup)
 		if err != nil {
@@ -64,7 +64,7 @@ func (b *batchRegion) batch() {
 }
 
 // subscribe subscribes to the response generated from looking up an id.
-func (b *batchRegion) subscribe(id models.SummonerID) (riot.LeagueResponse, error) {
+func (b *batchRegion) subscribe(id *apb.SummonerId) (riot.LeagueResponse, error) {
 	sub := &subscription{
 		id: id,
 		c:  make(chan riot.LeagueResponse),
@@ -79,25 +79,25 @@ func (b *batchRegion) subscribe(id models.SummonerID) (riot.LeagueResponse, erro
 	}
 }
 
-// Batcher batches ranking lookups from Riot.
+// Batcher batches ranking lookups from Riot per region.
 type Batcher struct {
 	Riot   *riot.Client      `inject:"t"`
 	Logger *logrus.Logger    `inject:"t"`
 	Config *config.AppConfig `inject:"t"`
 
-	batchers map[string]*batchRegion
+	batchers map[apb.Region]*batchRegion
 	mu       sync.Mutex
 }
 
 // NewBatcher constructs a new batcher for rank lookups.
 func NewBatcher() *Batcher {
 	return &Batcher{
-		batchers: map[string]*batchRegion{},
+		batchers: map[apb.Region]*batchRegion{},
 	}
 }
 
 // Region is a batching region.
-func (b *Batcher) Region(region string) *batchRegion {
+func (b *Batcher) Region(region apb.Region) *batchRegion {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	inst, ok := b.batchers[region]
@@ -114,10 +114,10 @@ func (b *Batcher) Region(region string) *batchRegion {
 }
 
 // Lookup looks up the id and returns the league response once batched and constructed
-func (b *Batcher) Lookup(id models.SummonerID) ([]*riot.LeagueDto, error) {
+func (b *Batcher) Lookup(id *apb.SummonerId) ([]*riot.LeagueDto, error) {
 	res, err := b.Region(id.Region).subscribe(id)
 	if err != nil {
 		return nil, err
 	}
-	return res[strconv.Itoa(id.ID)], nil
+	return res[strconv.Itoa(int(id.Id))], nil
 }

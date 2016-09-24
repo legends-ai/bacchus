@@ -8,14 +8,24 @@ import (
 
 func TestRankToNumber(t *testing.T) {
 	for _, test := range []struct {
-		Tier     uint16
-		Division uint16
+		Rank     *apb.Rank
 		Expected uint32
 	}{
-		{0x10, 0x10, 0x00100010},
-		{0x1000, 0x1009, 0x10001009},
+		{
+			Rank: &apb.Rank{
+				Tier:     0x10,
+				Division: 0x10,
+			},
+			Expected: 0x00100010,
+		{
+			Rank: &apb.Rank{
+				Tier:     0x1000,
+				Division: 0x1000,
+			},
+			Expected: 0x10001000,
+		},
 	} {
-		assert.Equal(t, test.Expected, Rank{test.Tier, test.Division}.ToNumber())
+		assert.Equal(t, test.Expected, RankToNumber(test.Rank))
 	}
 }
 

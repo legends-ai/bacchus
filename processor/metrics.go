@@ -1,8 +1,10 @@
 package processor
 
 import (
+	"time"
+
 	"github.com/Sirupsen/logrus"
-	"github.com/asunaio/bacchus/models"
+	apb "github.com/asunaio/bacchus/gen-go/asuna"
 )
 
 // Metrics records processed summoners and matches and logs progress.
@@ -12,40 +14,49 @@ type Metrics struct {
 	SummonerRate int
 	// MatchRate is the number of processed matches to log a message.
 	MatchRate int
-	sn        int
-	mn        int
-	sc        chan models.SummonerID
-	mc        chan models.MatchID
+
+	sn int
+	mn int
+
+	sc chan *apb.SummonerId
+	mc chan *apb.MatchId
 }
 
 // Start starts the metrics.
 func (m *Metrics) Start() {
-	m.sc = make(chan models.SummonerID)
-	m.mc = make(chan models.MatchID)
+	m.sc = make(chan *apb.SummonerId)
+	m.mc = make(chan *apb.MatchId)
+
+	// Show rate
+	go func() {
+		for range time.Tick(5 * time.Second) {
+			sRate := float64(m.sn) / 5.0
+			mRate := float64(m.mn) / 5.0
+			m.Logger.Infof("Processed %d summoners (%.2f/sec), %d matches (%.2f/sec)", m.sn, sRate, m.mn, mRate)
+			m.sn = 0
+			m.mn = 0
+		}
+	}()
+
+	// Process channels
 	for {
 		select {
-		case id := <-m.sc:
+		case <-m.sc:
 			m.sn += 1
-			if m.sn%m.SummonerRate == 0 {
-				m.Logger.Infof("Processed %d summoners (%s)", m.sn, id.String())
-			}
 			break
-		case id := <-m.mc:
+		case <-m.mc:
 			m.mn += 1
-			if m.mn%m.MatchRate == 0 {
-				m.Logger.Infof("Processed %d matches (%s)", m.mn, id.String())
-			}
 			break
 		}
 	}
 }
 
 // RecordSummoner records a summoner.
-func (m *Metrics) RecordSummoner(id models.SummonerID) {
+func (m *Metrics) RecordSummoner(id *apb.SummonerId) {
 	m.sc <- id
 }
 
 // RecordMatch records a match.
-func (m *Metrics) RecordMatch(id models.MatchID) {
+func (m *Metrics) RecordMatch(id *apb.MatchId) {
 	m.mc <- id
 }

@@ -9,8 +9,10 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/asunaio/bacchus/config"
 	"github.com/asunaio/bacchus/db"
+	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/models"
 	"github.com/asunaio/bacchus/riot"
+	"github.com/golang/protobuf/ptypes"
 )
 
 // LookupService looks things up.
@@ -23,16 +25,18 @@ type LookupService struct {
 }
 
 // Lookup looks up the given ids for a time and returns a rank.
-func (ls *LookupService) Lookup(ids []models.SummonerID, t time.Time) map[models.SummonerID]models.Rank {
+func (ls *LookupService) Lookup(ids []*apb.SummonerId) (map[*apb.SummonerId]*apb.Rank, error) {
+	var err error
 	var mu sync.Mutex
 	var wg sync.WaitGroup
-	ret := map[models.SummonerID]models.Rank{}
+
+	ret := map[*apb.SummonerId]*apb.Rank{}
 	wg.Add(len(ids))
 	for _, id := range ids {
 		// Asynchronously look up all summoners
-		go func(id models.SummonerID) {
+		go func(id *apb.SummonerId) {
 			defer wg.Done()
-			rank, err := ls.lookup(id, t)
+			rank, err := ls.lookup(id)
 			if err != nil {
 				ls.Logger.Errorf("Error looking up rank: %v", err)
 				return
@@ -41,17 +45,23 @@ func (ls *LookupService) Lookup(ids []models.SummonerID, t time.Time) map[models
 				return
 			}
 			mu.Lock()
-			ret[id] = *rank
+			ret[id] = rank
 			mu.Unlock()
 		}(id)
 	}
 	wg.Wait()
-	return ret
+
+	// check for one failure
+	if err != nil {
+		return nil, fmt.Errorf("could not lookup rank: %v", err)
+	}
+
+	return ret, nil
 }
 
-func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank, error) {
+func (ls *LookupService) lookup(id *apb.SummonerId) (*apb.Rank, error) {
 	// check cassandra cache
-	rank, err := ls.lookupCassandra(id, t)
+	rank, err := ls.lookupCassandra(id)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +69,6 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 		return rank, nil
 	}
 	// not in cassandra, do api lookup
-	ls.Logger.Infof("Expired rank for %s, performing API lookup", id.String())
 	dtos, err := ls.Batcher.Lookup(id)
 
 	var dto *riot.LeagueDto
@@ -78,26 +87,31 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 	tier := dto.Tier
 	var entry *riot.LeagueEntryDto
 	for _, x := range dto.Entries {
-		if x.PlayerOrTeamID == strconv.Itoa(id.ID) {
+		if x.PlayerOrTeamID == strconv.Itoa(int(id.Id)) {
 			entry = x
 			break
 		}
 	}
 	if entry == nil {
 		// should not happen
-		return nil, fmt.Errorf("no summoner %d for league %s of %s", id.ID, dto.Name, dto.Tier)
+		return nil, fmt.Errorf("no summoner %d for league %s of %s", id.Id, dto.Name, dto.Tier)
 	}
 	rank, err = models.ParseRank(tier, entry.Division)
 	if err != nil {
 		return nil, fmt.Errorf("invalid rank: %v", err)
 	}
-	ranking := models.Ranking{
-		ID:   id,
-		Time: t,
-		Rank: *rank,
+
+	now, err := ptypes.TimestampProto(time.Now())
+	if err != nil {
+		// this err is wtf
+		return nil, fmt.Errorf("could not now the time: %v", err)
 	}
 
-	ls.Logger.Infof("Found rank of %d: %s %s (%d %x)", id.ID, tier, entry.Division, rank.ToNumber(), rank.ToNumber())
+	ranking := &apb.Ranking{
+		Summoner: id,
+		Rank:     rank,
+		Time:     now,
+	}
 
 	if err = ls.Rankings.Insert(ranking); err != nil {
 		return nil, fmt.Errorf("error inserting ranking: %v", err)
@@ -109,18 +123,27 @@ func (ls *LookupService) lookup(id models.SummonerID, t time.Time) (*models.Rank
 // lookupCassandra looks up the summoner rank in Cassandra.
 // Returns the rank if it exists, whether the rank is already in Cassandra,
 // and an error if it exists.
-func (ls *LookupService) lookupCassandra(id models.SummonerID, t time.Time) (*models.Rank, error) {
+func (ls *LookupService) lookupCassandra(id *apb.SummonerId) (*apb.Rank, error) {
 	// check cassandra cache
 	res, err := ls.Rankings.Get(id)
 	if err != nil {
 		return nil, fmt.Errorf("could not lookup Cassandra: %v", err)
 	}
-	ranking := res.AtTime(t)
-	if ranking == nil {
+	if res == nil {
 		return nil, nil
 	}
-	if ranking != res.Latest() || time.Now().Sub(ranking.Time) < ls.Config.RankExpiry {
-		return &ranking.Rank, nil
+
+	// get time
+	t, err := ptypes.Timestamp(res.Time)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse time: %v", err)
 	}
-	return nil, nil
+
+	// Check if rank is expired
+	if time.Now().Sub(t) >= ls.Config.RankExpiry {
+		return nil, nil
+	}
+
+	// ret
+	return res.Rank, nil
 }

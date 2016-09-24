@@ -59,13 +59,15 @@ func NewInjector() inject.Injector {
 	}
 
 	// Load processor metrics
-	_, err = injector.ApplyMap(processor.Metrics{
+	metrics := &processor.Metrics{
 		SummonerRate: 1,
 		MatchRate:    1,
-	})
+	}
+	_, err = injector.ApplyMap(metrics)
 	if err != nil {
 		logger.Fatalf("Could not inject processor: %v", err)
 	}
+	go metrics.Start()
 
 	// Load summoner and match processors
 	logger.Info("Loading processors")

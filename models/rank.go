@@ -1,6 +1,10 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+
+	apb "github.com/asunaio/bacchus/gen-go/asuna"
+)
 
 const (
 	TierChallenger = "CHALLENGER"
@@ -18,43 +22,37 @@ const (
 	DivisionV   = "V"
 )
 
-// Rank represents a rank.
-type Rank struct {
-	Tier     uint16
-	Division uint16
-}
-
-// ToNumber returns a numerical representation of rank that can be sorted.
-func (r Rank) ToNumber() uint32 {
-	return uint32(r.Tier)<<16 | uint32(r.Division)
-}
-
-// Over checks if the rank is >= the given rank
-func (r Rank) Over(o Rank) bool {
-	return r.ToNumber() >= o.ToNumber()
+// RankToNumber returns a numerical representation of rank that can be sorted.
+func RankToNumber(r *apb.Rank) uint32 {
+	return r.Tier<<16 | r.Division
 }
 
 // RankFromNumber returns a Rank from a number.
-func RankFromNumber(n uint32) Rank {
-	return Rank{
-		Division: uint16(n & 0xffff),
-		Tier:     uint16(n >> 16),
+func RankFromNumber(n uint32) *apb.Rank {
+	return &apb.Rank{
+		Tier:     n >> 16,
+		Division: n & 0xffff,
 	}
 }
 
 // MinRank gets the minimum rank out of the given ranks
-func MinRank(res []Rank) Rank {
-	min := Rank{1<<16 - 1, 1<<16 - 1}
+func MinRank(res []*apb.Rank) *apb.Rank {
+	min := &apb.Rank{1<<16 - 1, 1<<16 - 1}
 	for _, rank := range res {
-		if !rank.Over(min) {
-			min = rank
+		if RankOver(rank, min) {
+			continue
 		}
+		min = rank
 	}
 	return min
 }
 
+func RankOver(a *apb.Rank, b *apb.Rank) bool {
+	return RankToNumber(a) > RankToNumber(b)
+}
+
 // ParseRank parses a tier and division to return a Rank.
-func ParseRank(tier, division string) (*Rank, error) {
+func ParseRank(tier, division string) (*apb.Rank, error) {
 	ti := parseTier(tier)
 	if ti == 0 {
 		return nil, fmt.Errorf("invalid tier %s", tier)
@@ -63,13 +61,13 @@ func ParseRank(tier, division string) (*Rank, error) {
 	if di == 0 {
 		return nil, fmt.Errorf("invalid division %s", division)
 	}
-	return &Rank{
+	return &apb.Rank{
 		Tier:     ti,
 		Division: di,
 	}, nil
 }
 
-func parseTier(s string) uint16 {
+func parseTier(s string) uint32 {
 	switch s {
 	case TierChallenger:
 		return 0x70
@@ -90,7 +88,7 @@ func parseTier(s string) uint16 {
 	}
 }
 
-func parseDivision(s string) uint16 {
+func parseDivision(s string) uint32 {
 	switch s {
 	case DivisionI:
 		return 0x50
