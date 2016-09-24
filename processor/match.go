@@ -2,6 +2,7 @@ package processor
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
@@ -126,5 +127,6 @@ func (m *Matches) process(id *apb.MatchId) {
 		Body:  json,
 	})
 
+	fmt.Println(id)
 	m.Metrics.RecordMatch(id)
 }

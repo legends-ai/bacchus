@@ -33,6 +33,12 @@ type AppConfig struct {
 
 	// BatchSize is the size of a batch when performing rank lookups.
 	BatchSize int `envconfig:"batch_size" default:"8"`
+
+	// Port is the port on which Bacchus runs on.
+	Port int `envconfig:"port" default:"9730"`
+
+	// MonitorPort is the port on which pprof and health check run on.
+	MonitorPort int `envconfig:"port" default:"9731"`
 }
 
 // Fetch fetches the config from env vars
