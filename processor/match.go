@@ -87,12 +87,14 @@ func (m *Matches) process(id *apb.MatchId) {
 	rank := models.MinRank(ranks)
 
 	// Write match to Cassandra
-	m.Matches.Insert(&apb.RawMatch{
+	if err := m.Matches.Insert(&apb.RawMatch{
 		Id:    id,
 		Patch: res.Payload.MatchVersion,
 		Rank:  rank,
 		Body:  res.Payload.RawJson,
-	})
+	}); err != nil {
+		m.Logger.Errorf("Could not insert match to Cassandra: %v", err)
+	}
 
 	m.Metrics.RecordMatch(id)
 }
