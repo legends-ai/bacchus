@@ -7,10 +7,6 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-const (
-	app = "RIOT"
-)
-
 // AppConfig is the configuration for the app
 type AppConfig struct {
 	// AthenaHosts is a list of Athena Cassandra hosts.
@@ -35,7 +31,7 @@ type AppConfig struct {
 // Fetch fetches the config from env vars
 func Fetch() *AppConfig {
 	var a AppConfig
-	err := envconfig.Process(app, &a)
+	err := envconfig.Process("BACCHUS", &a)
 	if err != nil {
 		log.Fatalf("Error processing config: %v", err)
 	}
