@@ -1,27 +1,26 @@
 package rank
 
 import (
-	"strconv"
 	"sync"
+
+	"golang.org/x/net/context"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/asunaio/bacchus/config"
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
-	"github.com/asunaio/bacchus/riot"
 )
 
 // subscription is a subscription to later complete.
 type subscription struct {
 	id *apb.SummonerId
-	c  chan riot.LeagueResponse
+	c  chan *apb.Ranking
 	e  chan error
 }
 
 // A batch for a region.
 type batchRegion struct {
 	b *Batcher
-	// Region
-	r *riot.API
+	r apb.Region
 	// Channel containing subscriptions
 	subs chan *subscription
 }
@@ -37,11 +36,17 @@ func (b *batchRegion) batch() {
 		}
 
 		// Perform batched lookup
-		var lookup []string
+		var lookup []uint64
 		for _, s := range subs {
-			lookup = append(lookup, strconv.Itoa(int(s.id.Id)))
+			lookup = append(lookup, s.id.Id)
 		}
-		res, err := b.r.League(lookup)
+
+		// Make request
+		res, err := b.b.Charon.GetRankings(context.TODO(), &apb.CharonRankingsRequest{
+			Region:      b.r,
+			SummonerIds: lookup,
+		})
+
 		if err != nil {
 			b.b.Logger.Errorf("Error batching: %v", err)
 			for _, s := range subs {
@@ -55,7 +60,7 @@ func (b *batchRegion) batch() {
 
 		// return results
 		for _, s := range subs {
-			s.c <- res
+			s.c <- res.Payload.Rankings[s.id.Id]
 			close(s.c)
 			close(s.e)
 			subs = []*subscription{}
@@ -64,26 +69,26 @@ func (b *batchRegion) batch() {
 }
 
 // subscribe subscribes to the response generated from looking up an id.
-func (b *batchRegion) subscribe(id *apb.SummonerId) (riot.LeagueResponse, error) {
+func (b *batchRegion) subscribe(id *apb.SummonerId) (*apb.Ranking, error) {
 	sub := &subscription{
 		id: id,
-		c:  make(chan riot.LeagueResponse),
+		c:  make(chan *apb.Ranking),
 		e:  make(chan error),
 	}
 	b.subs <- sub
 	select {
-	case res := <-sub.c:
-		return res, nil
+	case ranking := <-sub.c:
+		return ranking, nil
 	case err := <-sub.e:
 		return nil, err
 	}
 }
 
-// Batcher batches ranking lookups from Riot per region.
+// Batcher batches ranking lookups from Charon per region.
 type Batcher struct {
-	Riot   *riot.Client      `inject:"t"`
 	Logger *logrus.Logger    `inject:"t"`
 	Config *config.AppConfig `inject:"t"`
+	Charon apb.CharonClient  `inject:"t"`
 
 	batchers map[apb.Region]*batchRegion
 	mu       sync.Mutex
@@ -104,7 +109,7 @@ func (b *Batcher) Region(region apb.Region) *batchRegion {
 	if !ok {
 		inst = &batchRegion{
 			b:    b,
-			r:    b.Riot.Region(region),
+			r:    region,
 			subs: make(chan *subscription),
 		}
 		go inst.batch()
@@ -114,10 +119,6 @@ func (b *Batcher) Region(region apb.Region) *batchRegion {
 }
 
 // Lookup looks up the id and returns the league response once batched and constructed
-func (b *Batcher) Lookup(id *apb.SummonerId) ([]*riot.LeagueDto, error) {
-	res, err := b.Region(id.Region).subscribe(id)
-	if err != nil {
-		return nil, err
-	}
-	return res[strconv.Itoa(int(id.Id))], nil
+func (b *Batcher) Lookup(id *apb.SummonerId) (*apb.Ranking, error) {
+	return b.Region(id.Region).subscribe(id)
 }

@@ -1,25 +1,22 @@
 package processor
 
 import (
-	"encoding/json"
-	"strconv"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/asunaio/bacchus/db"
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/models"
 	"github.com/asunaio/bacchus/rank"
-	"github.com/asunaio/bacchus/riot"
+	"golang.org/x/net/context"
 )
 
 // Matches is the processor for matches.
 type Matches struct {
-	Riot      *riot.Client        `inject:"t"`
+	Charon    apb.CharonClient    `inject:"t"`
 	Logger    *logrus.Logger      `inject:"t"`
-	Summoners *Summoners          `inject:"t"`
 	Matches   *db.MatchesDAO      `inject:"t"`
-	Ranks     *rank.LookupService `inject:"t"`
 	Metrics   *Metrics            `inject:"t"`
+	Ranks     *rank.LookupService `inject:"t"`
+	Summoners *Summoners          `inject:"t"`
 
 	c      chan *apb.MatchId
 	cutoff *apb.Rank
@@ -60,41 +57,18 @@ func (m *Matches) Start() {
 	}
 }
 
-func (m *Matches) minifyJSON(data string) (string, error) {
-	var min interface{}
-	if err := json.Unmarshal([]byte(data), &min); err != nil {
-		return "", err
-	}
-	d, err := json.Marshal(min)
-	if err != nil {
-		return "", err
-	}
-	return string(d), nil
-}
-
 func (m *Matches) process(id *apb.MatchId) {
-	region := m.Riot.Region(id.Region)
-
 	// Retrieve match data
-	res, err := region.Match(strconv.Itoa(int(id.Id)))
+	res, err := m.Charon.GetMatch(context.TODO(), &apb.CharonMatchRequest{
+		Match: id,
+	})
 	if err != nil {
 		m.Logger.Errorf("Could not fetch details of match %v: %v", id, err)
 		return
 	}
 
-	// Ignore non-ranked
-	if res.QueueType != riot.QueueSolo5x5 && res.QueueType != riot.QueuePremade5x5 && res.QueueType != riot.QueueTeamBuilderDraftRanked5x5 {
-		return
-	}
-
 	// Fetch summoners from match
-	var ids []*apb.SummonerId
-	for _, p := range res.ParticipantIdentities {
-		ids = append(ids, &apb.SummonerId{
-			Region: id.Region,
-			Id:     uint32(p.Player.SummonerID),
-		})
-	}
+	ids := res.Payload.Summoners
 
 	// Get min rank of players
 	sums, err := m.Ranks.Lookup(ids)
@@ -112,18 +86,12 @@ func (m *Matches) process(id *apb.MatchId) {
 	}
 	rank := models.MinRank(ranks)
 
-	// Minify JSON
-	json, err := m.minifyJSON(res.RawJSON)
-	if err != nil {
-		m.Logger.Errorf("Could not minify Riot JSON: %v", err)
-	}
-
 	// Write match to Cassandra
 	m.Matches.Insert(&apb.RawMatch{
 		Id:    id,
-		Patch: res.MatchVersion,
+		Patch: res.Payload.MatchVersion,
 		Rank:  rank,
-		Body:  json,
+		Body:  res.Payload.RawJson,
 	})
 
 	m.Metrics.RecordMatch(id)

@@ -38,7 +38,10 @@ type AppConfig struct {
 	Port int `envconfig:"port" default:"9730"`
 
 	// MonitorPort is the port on which pprof and health check run on.
-	MonitorPort int `envconfig:"port" default:"9731"`
+	MonitorPort int `envconfig:"monitor_port" default:"9731"`
+
+	// CharonHost is the Charon host/port.
+	CharonHost string `envconfig:"charon_host" default:"localhost:5609"`
 }
 
 // Fetch fetches the config from env vars
