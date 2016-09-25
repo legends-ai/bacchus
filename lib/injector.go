@@ -8,7 +8,6 @@ import (
 	"github.com/asunaio/bacchus/processor"
 	"github.com/asunaio/bacchus/rank"
 	"github.com/simplyianm/inject"
-	"github.com/simplyianm/keypool"
 	"google.golang.org/grpc"
 )
 
@@ -24,10 +23,6 @@ func NewInjector() inject.Injector {
 	// Load config
 	cfg := config.Fetch()
 	injector.Map(cfg)
-
-	// Load keypool
-	keys := keypool.New(cfg.APIKeys, cfg.MaxRate)
-	injector.Map(keys)
 
 	// Create a client for Charon
 	logger.Infof("Connecting to Charon at %s", cfg.CharonHost)
