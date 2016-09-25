@@ -1,23 +1,23 @@
 package processor
 
 import (
-	"strconv"
 	"sync"
+
+	"golang.org/x/net/context"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/asunaio/bacchus/db"
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/models"
-	"github.com/asunaio/bacchus/riot"
 )
 
 // Queues is the processor for queues.
 type Summoners struct {
-	Riot     *riot.Client    `inject:"t"`
-	Logger   *logrus.Logger  `inject:"t"`
-	Matches  *Matches        `inject:"t"`
-	Rankings *db.RankingsDAO `inject:"t"`
-	Metrics  *Metrics        `inject:"t"`
+	Charon   apb.CharonClient `inject:"t"`
+	Logger   *logrus.Logger   `inject:"t"`
+	Matches  *Matches         `inject:"t"`
+	Metrics  *Metrics         `inject:"t"`
+	Rankings *db.RankingsDAO  `inject:"t"`
 
 	c        chan *apb.SummonerId
 	exists   map[*apb.SummonerId]bool
@@ -86,7 +86,15 @@ func (s *Summoners) Seed() {
 
 func (s *Summoners) process(id *apb.SummonerId) {
 	// process the summoner
-	res, err := s.Riot.Region(id.Region).Game(strconv.Itoa(int(id.Id)))
+	res, err := s.Charon.GetMatchList(context.TODO(), &apb.CharonMatchListRequest{
+		Summoner: id,
+		Seasons: []string{
+			"PRESEASON2015",
+			"SEASON2015",
+			"PRESEASON2016",
+			"SEASON2016",
+		},
+	})
 	if err != nil {
 		s.Logger.Errorf("Could not fetch games of %s: %v", id.String(), err)
 		return
@@ -98,11 +106,8 @@ func (s *Summoners) process(id *apb.SummonerId) {
 	s.existsMu.Unlock()
 
 	// offer le games
-	for _, game := range res.Games {
-		s.Matches.Offer(&apb.MatchId{
-			Region: id.Region,
-			Id:     uint32(game.GameID),
-		})
+	for _, match := range res.Payload.Matches {
+		s.Matches.Offer(match)
 	}
 
 	s.Metrics.RecordSummoner(id)

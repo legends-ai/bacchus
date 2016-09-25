@@ -4,11 +4,12 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/asunaio/bacchus/config"
 	"github.com/asunaio/bacchus/db"
+	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/processor"
 	"github.com/asunaio/bacchus/rank"
-	"github.com/asunaio/bacchus/riot"
 	"github.com/simplyianm/inject"
 	"github.com/simplyianm/keypool"
+	"google.golang.org/grpc"
 )
 
 // NewInjector sets up dependencies for Bacchus.
@@ -28,11 +29,14 @@ func NewInjector() inject.Injector {
 	keys := keypool.New(cfg.APIKeys, cfg.MaxRate)
 	injector.Map(keys)
 
-	// Create a client for Riot
-	_, err := injector.ApplyMap(riot.New())
+	// Create a client for Charon
+	logger.Infof("Connecting to Charon at %s", cfg.CharonHost)
+	charonConn, err := grpc.Dial(cfg.CharonHost, grpc.WithInsecure())
 	if err != nil {
-		logger.Fatalf("Could not inject riot client: %v", err)
+		logger.Fatalf("Could not connect to Charon: %v", err)
 	}
+	charon := apb.NewCharonClient(charonConn)
+	injector.Map(charon)
 
 	// Load Cassandra cluster
 	logger.Info("Connecting to Cassandra")
