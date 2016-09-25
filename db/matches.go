@@ -31,7 +31,7 @@ func (m *MatchesDAO) Exists(id *apb.MatchId) (bool, error) {
 func (a *MatchesDAO) Insert(m *apb.RawMatch) error {
 	return a.Session.Query(
 		insertMatchQuery, models.StringifyMatchId(m.Id),
-		m.Id.Region, m.Body, models.RankToNumber(m.Rank),
+		m.Id.Region.String(), m.Body, models.RankToNumber(m.Rank),
 		m.Patch,
 	).Exec()
 }
