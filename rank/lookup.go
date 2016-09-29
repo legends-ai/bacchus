@@ -73,7 +73,6 @@ func (ls *LookupService) lookup(id *apb.SummonerId) (*apb.Rank, error) {
 
 	if ranking == nil {
 		// missing ranking from riot
-		// fuck
 		return nil, nil
 	}
 
