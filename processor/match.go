@@ -84,10 +84,10 @@ func (m *Matches) process(id *apb.MatchId) {
 			m.Summoners.Offer(id)
 		}
 	}
-	if len(ranks) == 0 {
+	rank := models.MedianRank(ranks)
+	if rank == nil {
 		m.Logger.Errorf("Outdated ranks for match %s")
 	}
-	rank := models.MinRank(ranks)
 
 	// Write match to Cassandra
 	if err := m.Matches.Insert(&apb.RawMatch{

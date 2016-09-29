@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"sort"
 
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 )
@@ -22,6 +23,20 @@ const (
 	DivisionV   = "V"
 )
 
+type rankAscending []*apb.Rank
+
+func (r rankAscending) Swap(a, b int) {
+	r[a], r[b] = r[b], r[a]
+}
+
+func (r rankAscending) Less(a, b int) bool {
+	return RankToNumber(r[a]) < RankToNumber(r[b])
+}
+
+func (r rankAscending) Len() int {
+	return len(r)
+}
+
 // RankToNumber returns a numerical representation of rank that can be sorted.
 func RankToNumber(r *apb.Rank) uint32 {
 	return r.Tier<<16 | r.Division
@@ -32,6 +47,22 @@ func RankFromNumber(n uint32) *apb.Rank {
 	return &apb.Rank{
 		Tier:     n >> 16,
 		Division: n & 0xffff,
+	}
+}
+
+// MedianRank calculates the median rank in the list.
+func MedianRank(res []*apb.Rank) *apb.Rank {
+	l := len(res)
+	if l == 0 {
+		// should not happen
+		return nil
+	}
+
+	sort.Sort(rankAscending(res))
+	if l%2 == 0 {
+		return res[l/2-1]
+	} else {
+		return res[l/2]
 	}
 }
 
