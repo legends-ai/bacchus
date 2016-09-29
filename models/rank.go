@@ -54,7 +54,6 @@ func RankFromNumber(n uint32) *apb.Rank {
 func MedianRank(res []*apb.Rank) *apb.Rank {
 	l := len(res)
 	if l == 0 {
-		// should not happen
 		return nil
 	}
 
