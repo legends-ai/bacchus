@@ -86,7 +86,7 @@ func (m *Matches) process(id *apb.MatchId) {
 	}
 	rank := models.MedianRank(ranks)
 	if rank == nil {
-		m.Logger.Errorf("Outdated ranks for match %s")
+		m.Logger.Errorf("Outdated ranks for match %s", id)
 	}
 
 	// Write match to Cassandra
