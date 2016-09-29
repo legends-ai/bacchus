@@ -72,7 +72,9 @@ func (ls *LookupService) lookup(id *apb.SummonerId) (*apb.Rank, error) {
 	}
 
 	if ranking == nil {
-		return nil, fmt.Errorf("nil ranking generated from batcher for %s", id)
+		// missing ranking from riot
+		// fuck
+		return nil, nil
 	}
 
 	if err = ls.Rankings.Insert(ranking); err != nil {
