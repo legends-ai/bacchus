@@ -3,6 +3,8 @@ package models
 import (
 	"testing"
 
+	apb "github.com/asunaio/bacchus/gen-go/asuna"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,10 +35,10 @@ func TestRankToNumber(t *testing.T) {
 func TestRankFromNumber(t *testing.T) {
 	for _, test := range []struct {
 		Number   uint32
-		Expected Rank
+		Expected *apb.Rank
 	}{
-		{0x00100010, Rank{0x10, 0x10}},
-		{0x9010d010, Rank{0x9010, 0xd010}},
+		{0x00100010, &apb.Rank{0x10, 0x10}},
+		{0x9010d010, &apb.Rank{0x9010, 0xd010}},
 	} {
 		assert.Equal(t, test.Expected, RankFromNumber(test.Number))
 	}
@@ -53,6 +55,37 @@ func TestParseRank(t *testing.T) {
 	} {
 		r, err := ParseRank(test.Tier, test.Division)
 		assert.Nil(t, err)
-		assert.Equal(t, *r, RankFromNumber(test.Out))
+		assert.Equal(t, r, RankFromNumber(test.Out))
+	}
+}
+
+func TestMedianRank(t *testing.T) {
+	for _, test := range []struct {
+		Ranks []*apb.Rank
+		Out   uint32
+	}{
+		{
+			Ranks: []*apb.Rank{
+				RankFromNumber(0x00100010),
+				RankFromNumber(0x00100020),
+				RankFromNumber(0x00100030),
+				RankFromNumber(0x00100050),
+				RankFromNumber(0x00100070),
+			},
+			Out: 0x00100030,
+		},
+		{
+			Ranks: []*apb.Rank{
+				RankFromNumber(0x00100030),
+				RankFromNumber(0x00100050),
+				RankFromNumber(0x00100010),
+				RankFromNumber(0x00100020),
+				RankFromNumber(0x00100070),
+			},
+			Out: 0x00100030,
+		},
+	} {
+		r := MedianRank(test.Ranks)
+		assert.Equal(t, r, RankFromNumber(test.Out))
 	}
 }
