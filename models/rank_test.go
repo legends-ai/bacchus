@@ -17,6 +17,7 @@ func TestRankToNumber(t *testing.T) {
 				Division: 0x10,
 			},
 			Expected: 0x00100010,
+		},
 		{
 			Rank: &apb.Rank{
 				Tier:     0x1000,
