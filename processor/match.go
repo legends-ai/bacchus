@@ -67,6 +67,8 @@ func (m *Matches) process(id *apb.MatchId) {
 		return
 	}
 
+	m.Metrics.Record("match-fetch")
+
 	// Fetch summoners from match
 	ids := res.Payload.Summoners
 
@@ -100,5 +102,5 @@ func (m *Matches) process(id *apb.MatchId) {
 		m.Logger.Errorf("Could not insert match to Cassandra: %v", err)
 	}
 
-	m.Metrics.RecordMatch(id)
+	m.Metrics.Record("match-write")
 }

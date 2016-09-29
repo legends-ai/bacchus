@@ -58,10 +58,7 @@ func NewInjector() inject.Injector {
 	}
 
 	// Load processor metrics
-	metrics := &processor.Metrics{
-		SummonerRate: 1,
-		MatchRate:    1,
-	}
+	metrics := &processor.Metrics{}
 	_, err = injector.ApplyMap(metrics)
 	if err != nil {
 		logger.Fatalf("Could not inject processor: %v", err)

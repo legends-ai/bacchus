@@ -110,5 +110,5 @@ func (s *Summoners) process(id *apb.SummonerId) {
 		s.Matches.Offer(match)
 	}
 
-	s.Metrics.RecordSummoner(id)
+	s.Metrics.Record("summoner")
 }
