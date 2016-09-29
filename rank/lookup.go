@@ -71,6 +71,10 @@ func (ls *LookupService) lookup(id *apb.SummonerId) (*apb.Rank, error) {
 		return nil, fmt.Errorf("could not lookup ranking for %v: %v", id, err)
 	}
 
+	if ranking == nil {
+		return nil, fmt.Errorf("nil ranking generated from batcher for %s", id)
+	}
+
 	if err = ls.Rankings.Insert(ranking); err != nil {
 		return nil, fmt.Errorf("error inserting ranking: %v", err)
 	}
