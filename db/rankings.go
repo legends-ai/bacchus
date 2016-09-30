@@ -42,8 +42,8 @@ func (a *RankingsDAO) Get(id *apb.SummonerId) (*apb.Ranking, error) {
 }
 
 // AboveRank gets all summoner ids above a given rank with a limit.
-func (r *RankingsDAO) AboveRank(rank *apb.Rank, limit int) ([]*apb.SummonerId, error) {
-	var ret []*apb.SummonerId
+func (r *RankingsDAO) AboveRank(rank *apb.Rank, limit int) ([]*apb.Ranking, error) {
+	var ret []*apb.Ranking
 	it := r.Session.Query(aboveRankQuery, models.RankToNumber(rank), limit).Iter()
 
 	var cur []byte
@@ -52,7 +52,7 @@ func (r *RankingsDAO) AboveRank(rank *apb.Rank, limit int) ([]*apb.SummonerId, e
 		if err := proto.Unmarshal(cur, &ranking); err != nil {
 			return nil, fmt.Errorf("error unmarshaling ranking: %v", err)
 		}
-		ret = append(ret, ranking.Summoner)
+		ret = append(ret, &ranking)
 	}
 	return ret, nil
 }

@@ -21,27 +21,27 @@ type LookupService struct {
 }
 
 // Lookup looks up the given ids for a time and returns a rank.
-func (ls *LookupService) Lookup(ids []*apb.SummonerId) (map[*apb.SummonerId]*apb.Rank, error) {
+func (ls *LookupService) Lookup(ids []*apb.SummonerId) (map[*apb.SummonerId]*apb.Ranking, error) {
 	var err error
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 
-	ret := map[*apb.SummonerId]*apb.Rank{}
+	ret := map[*apb.SummonerId]*apb.Ranking{}
 	wg.Add(len(ids))
 	for _, id := range ids {
 		// Asynchronously look up all summoners
 		go func(id *apb.SummonerId) {
 			defer wg.Done()
-			rank, err := ls.lookup(id)
+			ranking, err := ls.lookup(id)
 			if err != nil {
-				ls.Logger.Errorf("Error looking up rank: %v", err)
+				ls.Logger.Errorf("Error looking up ranking: %v", err)
 				return
 			}
-			if rank == nil {
+			if ranking == nil {
 				return
 			}
 			mu.Lock()
-			ret[id] = rank
+			ret[id] = ranking
 			mu.Unlock()
 		}(id)
 	}
@@ -49,24 +49,24 @@ func (ls *LookupService) Lookup(ids []*apb.SummonerId) (map[*apb.SummonerId]*apb
 
 	// check for one failure
 	if err != nil {
-		return nil, fmt.Errorf("could not lookup rank: %v", err)
+		return nil, fmt.Errorf("could not lookup ranking: %v", err)
 	}
 
 	return ret, nil
 }
 
-func (ls *LookupService) lookup(id *apb.SummonerId) (*apb.Rank, error) {
+func (ls *LookupService) lookup(id *apb.SummonerId) (*apb.Ranking, error) {
 	// check cassandra cache
-	rank, err := ls.lookupCassandra(id)
+	ranking, err := ls.lookupCassandra(id)
 	if err != nil {
 		return nil, err
 	}
-	if rank != nil {
-		return rank, nil
+	if ranking != nil {
+		return ranking, nil
 	}
 
 	// not in cassandra, do api lookup
-	ranking, err := ls.Batcher.Lookup(id)
+	ranking, err = ls.Batcher.Lookup(id)
 	if err != nil {
 		return nil, fmt.Errorf("could not lookup ranking for %v: %v", id, err)
 	}
@@ -80,13 +80,13 @@ func (ls *LookupService) lookup(id *apb.SummonerId) (*apb.Rank, error) {
 		return nil, fmt.Errorf("error inserting ranking: %v", err)
 	}
 
-	return rank, nil
+	return ranking, nil
 }
 
 // lookupCassandra looks up the summoner rank in Cassandra.
 // Returns the rank if it exists, whether the rank is already in Cassandra,
 // and an error if it exists.
-func (ls *LookupService) lookupCassandra(id *apb.SummonerId) (*apb.Rank, error) {
+func (ls *LookupService) lookupCassandra(id *apb.SummonerId) (*apb.Ranking, error) {
 	// check cassandra cache
 	res, err := ls.Rankings.Get(id)
 	if err != nil {
@@ -108,5 +108,5 @@ func (ls *LookupService) lookupCassandra(id *apb.SummonerId) (*apb.Rank, error) 
 	}
 
 	// ret
-	return res.Rank, nil
+	return res, nil
 }

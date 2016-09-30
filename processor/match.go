@@ -77,10 +77,10 @@ func (m *Matches) process(id *apb.MatchId) {
 	}
 
 	var ranks []*apb.Rank
-	for id, r := range sums {
-		ranks = append(ranks, r)
-		if models.RankOver(r, m.cutoff) {
-			m.Summoners.Offer(id)
+	for _, ranking := range sums {
+		ranks = append(ranks, ranking.Rank)
+		if models.RankOver(ranking.Rank, m.cutoff) {
+			m.Summoners.Offer(ranking)
 		}
 	}
 	rank := models.MedianRank(ranks)

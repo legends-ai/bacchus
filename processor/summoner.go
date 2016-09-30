@@ -34,13 +34,13 @@ func NewSummoners() *Summoners {
 }
 
 // Offer offers a summoner to the queue which may accept it.
-func (s *Summoners) Offer(id *apb.SummonerId) {
+func (s *Summoners) Offer(ranking *apb.Ranking) {
 	s.existsMu.RLock()
 	defer s.existsMu.RUnlock()
-	if s.exists[id] {
+	if s.exists[ranking.Summoner] {
 		return
 	}
-	s.q.Add(id, nil)
+	s.q.Add(ranking.Summoner, ranking)
 }
 
 // Start starts processing summoners.
@@ -59,25 +59,28 @@ func (s *Summoners) Seed() {
 	}
 
 	// get rankings
-	ids, err := s.Rankings.AboveRank(rank, 1000)
+	rankings, err := s.Rankings.AboveRank(rank, 1000)
 	if err != nil {
 		s.Logger.Fatalf("Could not perform initial seed: %v", err)
 	}
 
-	// Seed ids
-	if len(ids) == 0 {
+	// Seed rankings
+	if len(rankings) == 0 {
 		s.Logger.Info("Database empty; seeding with hardcoded value")
 		// no plat, do alternative seed
-		s.Offer(&apb.SummonerId{
-			Region: apb.Region_NA,
-			Id:     32875076,
+		s.Offer(&apb.Ranking{
+			Summoner: &apb.SummonerId{
+				Region: apb.Region_NA,
+				Id:     32875076,
+			},
+			Rank: rank,
 		}) // Pradyuman himself
 		return
 	}
 
-	// Offer found ids
-	for _, id := range ids {
-		s.Offer(id)
+	// Offer found rankings
+	for _, ranking := range rankings {
+		s.Offer(ranking)
 	}
 }
 
