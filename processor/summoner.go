@@ -9,6 +9,7 @@ import (
 	"github.com/asunaio/bacchus/db"
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/models"
+	"github.com/asunaio/bacchus/queue"
 )
 
 // Queues is the processor for queues.
@@ -19,7 +20,7 @@ type Summoners struct {
 	Metrics  *Metrics         `inject:"t"`
 	Rankings *db.RankingsDAO  `inject:"t"`
 
-	c        chan *apb.SummonerId
+	q        queue.Queue
 	exists   map[*apb.SummonerId]bool
 	existsMu sync.RWMutex
 }
@@ -27,7 +28,7 @@ type Summoners struct {
 // NewSummoners creates a new processor.Summoners.
 func NewSummoners() *Summoners {
 	return &Summoners{
-		c:      make(chan *apb.SummonerId, 1E7),
+		q:      queue.NewShitQueue(),
 		exists: map[*apb.SummonerId]bool{},
 	}
 }
@@ -39,17 +40,13 @@ func (s *Summoners) Offer(id *apb.SummonerId) {
 	if s.exists[id] {
 		return
 	}
-	s.c <- id
+	s.q.Add(id, nil)
 }
 
 // Start starts processing summoners.
 func (s *Summoners) Start() {
 	for {
-		id, ok := <-s.c
-		if !ok {
-			return
-		}
-		s.process(id)
+		s.process(s.q.Poll().(*apb.SummonerId))
 	}
 }
 

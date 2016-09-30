@@ -5,6 +5,7 @@ import (
 	"github.com/asunaio/bacchus/db"
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/models"
+	"github.com/asunaio/bacchus/queue"
 	"github.com/asunaio/bacchus/rank"
 	"golang.org/x/net/context"
 )
@@ -18,7 +19,7 @@ type Matches struct {
 	Ranks     *rank.LookupService `inject:"t"`
 	Summoners *Summoners          `inject:"t"`
 
-	c      chan *apb.MatchId
+	q      queue.Queue
 	cutoff *apb.Rank
 }
 
@@ -26,7 +27,7 @@ type Matches struct {
 func NewMatches() *Matches {
 	cutoff, _ := models.ParseRank(models.TierPlatinum, models.DivisionV)
 	return &Matches{
-		c:      make(chan *apb.MatchId, 1E7),
+		q:      queue.NewShitQueue(),
 		cutoff: cutoff,
 	}
 }
@@ -43,17 +44,13 @@ func (m *Matches) Offer(id *apb.MatchId) {
 		// don't scrape duplicate matches
 		return
 	}
-	m.c <- id
+	m.q.Add(id, nil)
 }
 
 // Start starts processing matches.
 func (m *Matches) Start() {
 	for {
-		id, ok := <-m.c
-		if !ok {
-			return
-		}
-		m.process(id)
+		m.process(m.q.Poll().(*apb.MatchId))
 	}
 }
 
