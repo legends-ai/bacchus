@@ -106,7 +106,7 @@ func (s *Summoners) process(id *apb.SummonerId) {
 	s.existsMu.Unlock()
 
 	// offer le games
-	for _, match := range res.Payload.Matches {
+	for _, match := range res.Matches {
 		s.Matches.Offer(match)
 	}
 

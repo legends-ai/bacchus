@@ -33,9 +33,9 @@ func NewMatches() *Matches {
 }
 
 // Offer offers a match to the queue which may accept it.
-func (m *Matches) Offer(id *apb.MatchId) {
+func (m *Matches) Offer(info *apb.CharonMatchListResponse_MatchInfo) {
 	// if key exists in cassandra return
-	ok, err := m.Matches.Exists(id)
+	ok, err := m.Matches.Exists(info.MatchId)
 	if err != nil {
 		m.Logger.Warnf("Could not check match: %v", err)
 		return
@@ -44,7 +44,7 @@ func (m *Matches) Offer(id *apb.MatchId) {
 		// don't scrape duplicate matches
 		return
 	}
-	m.q.Add(id, nil)
+	m.q.Add(info.MatchId, info)
 }
 
 // Start starts processing matches.
