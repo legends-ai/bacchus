@@ -4,7 +4,7 @@ build:
 	go build .
 
 clean:
-	rm bacchus || :
+	rm -f bacchus
 
 test:
 	go test `glide novendor`
@@ -14,6 +14,12 @@ serve: all
 
 genproto:
 	./proto/gen_go.sh
+
+init:
+	git submodule update --init
+
+install:
+	glide install
 
 syncproto:
 	cd proto && git pull origin master
