@@ -3,8 +3,11 @@ package queue
 import (
 	"bytes"
 	"encoding/gob"
-	apb "github.com/asunaio/bacchus/gen-go/asuna"
+	"fmt"
+
 	"gopkg.in/redis.v4"
+
+	apb "github.com/asunaio/bacchus/gen-go/asuna"
 )
 
 // Queue is a priority queue.
@@ -25,42 +28,87 @@ func init() {
 }
 
 type RedisQueue struct {
-	c    *redis.Client
-	List []string
+	c      *redis.Client
+	decode interface{}
+	List   []string
 }
 
-func NewRedisQueue() *RedisQueue {
+func NewRedisQueue(list []string, decode interface{}) *RedisQueue {
 	return &RedisQueue{
 		c: redis.NewClient(&redis.Options{
 			Addr:     "localhost:6379",
 			Password: "",
 			DB:       0,
 		}),
-		List: []string{"MATCH"},
+		decode: decode,
+		List:   list,
 	}
 }
 
-func (q *RedisQueue) Add(in *apb.MatchId, ctx *apb.CharonMatchListResponse_MatchInfo) {
-	b := bytes.Buffer{}
-	e := gob.NewEncoder(&b)
-	if err := e.Encode(*in); err != nil {
-		return
+func (q *RedisQueue) Add(in interface{}, ctx interface{}) {
+	switch in.(type) {
+	case *apb.SummonerId:
+		data, err := q.serialize(in)
+		if err != nil {
+			return
+		}
+		q.c.RPush(fmt.Sprintf("%#x", ctx.(*apb.Ranking).Rank.Tier), data)
+	case *apb.MatchId:
+		data, err := q.serialize(in)
+		if err != nil {
+			return
+		}
+		fmt.Println(data)
+		q.c.RPush(q.List[0], data)
 	}
-	q.c.RPush(q.List[1], b.Bytes())
 }
 
-func (q *RedisQueue) Poll() *apb.MatchId {
+func (q *RedisQueue) Poll() interface{} {
 	r, err := q.c.BLPop(0, q.List...).Result()
 	if err != nil {
 		return nil
 	}
-	data := &apb.MatchId{}
-	b := bytes.Buffer{}
-	b.Write([]byte(r[1]))
-	d := gob.NewDecoder(&b)
-	err = d.Decode(data)
+	data, err := q.deserialize(r[1])
 	if err != nil {
 		return nil
 	}
 	return data
+}
+
+func (q *RedisQueue) serialize(in interface{}) ([]byte, error) {
+	var err error
+	b := bytes.Buffer{}
+	e := gob.NewEncoder(&b)
+
+	switch in.(type) {
+	case *apb.SummonerId:
+		err = e.Encode(*in.(*apb.SummonerId))
+	case *apb.MatchId:
+		err = e.Encode(*in.(*apb.MatchId))
+	}
+	if err != nil {
+		return nil, err
+	}
+	return b.Bytes(), nil
+}
+
+func (q *RedisQueue) deserialize(r string) (interface{}, error) {
+	var err error
+	var data interface{}
+	b := bytes.Buffer{}
+	b.Write([]byte(r))
+	d := gob.NewDecoder(&b)
+
+	switch q.decode.(type) {
+	case *apb.SummonerId:
+		data = &apb.SummonerId{}
+	case *apb.MatchId:
+		data = &apb.MatchId{}
+	}
+
+	err = d.Decode(data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }

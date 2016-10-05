@@ -3,8 +3,11 @@ package queue
 import (
 	"bytes"
 	"encoding/gob"
-	apb "github.com/asunaio/bacchus/gen-go/asuna"
+
 	"gopkg.in/redis.v4"
+
+	"github.com/asunaio/bacchus/config"
+	apb "github.com/asunaio/bacchus/gen-go/asuna"
 )
 
 type MatchQueue struct {
@@ -19,7 +22,7 @@ func init() {
 func NewMatchQueue() *MatchQueue {
 	return &MatchQueue{
 		c: redis.NewClient(&redis.Options{
-			Addr:     "localhost:6379",
+			Addr:     config.Fetch().RedisHost,
 			Password: "",
 			DB:       0,
 		}),

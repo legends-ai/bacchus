@@ -1,7 +1,6 @@
 package processor
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/Sirupsen/logrus"
@@ -21,8 +20,7 @@ type Summoners struct {
 	Metrics  *Metrics         `inject:"t"`
 	Rankings *db.RankingsDAO  `inject:"t"`
 
-	q        queue.Queue
-	t        *queue.SummonerQueue
+	q        *queue.SummonerQueue
 	exists   map[*apb.SummonerId]bool
 	existsMu sync.RWMutex
 }
@@ -30,8 +28,7 @@ type Summoners struct {
 // NewSummoners creates a new processor.Summoners.
 func NewSummoners() *Summoners {
 	return &Summoners{
-		q:      queue.NewShitQueue(),
-		t:      queue.NewSummonerQueue(),
+		q:      queue.NewSummonerQueue(),
 		exists: map[*apb.SummonerId]bool{},
 	}
 }
@@ -44,14 +41,12 @@ func (s *Summoners) Offer(ranking *apb.Ranking) {
 		return
 	}
 	s.q.Add(ranking.Summoner, ranking)
-	s.t.Add(ranking.Summoner, ranking)
 }
 
 // Start starts processing summoners.
 func (s *Summoners) Start() {
 	for {
-		s.process(s.q.Poll().(*apb.SummonerId))
-		fmt.Println("s", s.t.Poll())
+		s.process(s.q.Poll())
 	}
 }
 
