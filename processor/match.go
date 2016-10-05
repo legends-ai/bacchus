@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/asunaio/bacchus/db"
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
@@ -20,6 +21,7 @@ type Matches struct {
 	Summoners *Summoners          `inject:"t"`
 
 	q      queue.Queue
+	t      *queue.MatchQueue
 	cutoff *apb.Rank
 }
 
@@ -28,6 +30,7 @@ func NewMatches() *Matches {
 	cutoff, _ := models.ParseRank(models.TierPlatinum, models.DivisionV)
 	return &Matches{
 		q:      queue.NewShitQueue(),
+		t:      queue.NewMatchQueue(),
 		cutoff: cutoff,
 	}
 }
@@ -45,12 +48,14 @@ func (m *Matches) Offer(info *apb.CharonMatchListResponse_MatchInfo) {
 		return
 	}
 	m.q.Add(info.MatchId, info)
+	m.t.Add(info.MatchId, info)
 }
 
 // Start starts processing matches.
 func (m *Matches) Start() {
 	for {
 		m.process(m.q.Poll().(*apb.MatchId))
+		fmt.Println("m", m.t.Poll())
 	}
 }
 

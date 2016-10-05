@@ -2,13 +2,15 @@ package lib
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/simplyianm/inject"
+	"google.golang.org/grpc"
+	"gopkg.in/redis.v4"
+
 	"github.com/asunaio/bacchus/config"
 	"github.com/asunaio/bacchus/db"
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/processor"
 	"github.com/asunaio/bacchus/rank"
-	"github.com/simplyianm/inject"
-	"google.golang.org/grpc"
 )
 
 // NewInjector sets up dependencies for Bacchus.
@@ -40,6 +42,17 @@ func NewInjector() inject.Injector {
 		logger.Fatalf("Could not load Cassandra cluster: %v", err)
 	}
 	injector.Map(session)
+
+	logger.Infof("Connecting to Redis at %s", cfg.RedisHost)
+	redisConn := redis.NewClient(&redis.Options{
+		Addr:     cfg.RedisHost,
+		Password: "",
+		DB:       0,
+	})
+	_, err = redisConn.Ping().Result()
+	if err != nil {
+		logger.Fatalf("Could not connect to Redis: %v", err)
+	}
 
 	// DAOs
 	injector.ApplyMap(&db.MatchesDAO{})

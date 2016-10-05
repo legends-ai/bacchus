@@ -1,11 +1,12 @@
 package processor
 
 import (
+	"fmt"
 	"sync"
 
+	"github.com/Sirupsen/logrus"
 	"golang.org/x/net/context"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/asunaio/bacchus/db"
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/models"
@@ -21,6 +22,7 @@ type Summoners struct {
 	Rankings *db.RankingsDAO  `inject:"t"`
 
 	q        queue.Queue
+	t        *queue.SummonerQueue
 	exists   map[*apb.SummonerId]bool
 	existsMu sync.RWMutex
 }
@@ -29,6 +31,7 @@ type Summoners struct {
 func NewSummoners() *Summoners {
 	return &Summoners{
 		q:      queue.NewShitQueue(),
+		t:      queue.NewSummonerQueue(),
 		exists: map[*apb.SummonerId]bool{},
 	}
 }
@@ -41,12 +44,14 @@ func (s *Summoners) Offer(ranking *apb.Ranking) {
 		return
 	}
 	s.q.Add(ranking.Summoner, ranking)
+	s.t.Add(ranking.Summoner, ranking)
 }
 
 // Start starts processing summoners.
 func (s *Summoners) Start() {
 	for {
 		s.process(s.q.Poll().(*apb.SummonerId))
+		fmt.Println("s", s.t.Poll())
 	}
 }
 

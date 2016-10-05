@@ -1,5 +1,5 @@
 hash: a0ac103a00f1a87d5c200143fd83d812120034b2d24ad27f9aded2d3bdc5c942
-updated: 2016-09-23T14:52:32.436612528-05:00
+updated: 2016-10-05T05:28:44.808377702-04:00
 imports:
 - name: github.com/gocql/gocql
   version: 89e1c0f309816323d37394c9f7a4a918301f609f
@@ -11,6 +11,9 @@ imports:
   version: 1f49d83d9aa00e6ce4fc8258c71cc7786aec968a
   subpackages:
   - proto
+  - ptypes
+  - ptypes/any
+  - ptypes/duration
   - ptypes/timestamp
 - name: github.com/golang/snappy
   version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
@@ -49,8 +52,19 @@ imports:
   - naming
   - peer
   - transport
+- name: gopkg.in/bsm/ratelimit.v1
+  version: db14e161995a5177acef654cb0dd785e8ee8bc22
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
+- name: gopkg.in/redis.v4
+  version: 5a272d03b960a72c61e5025a7d6e8da5d8815442
+  subpackages:
+  - internal
+  - internal/consistenthash
+  - internal/errors
+  - internal/hashtag
+  - internal/pool
+  - internal/proto
 testImports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
