@@ -7,6 +7,7 @@ import (
 
 	"gopkg.in/redis.v4"
 
+	"github.com/asunaio/bacchus/config"
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 )
 
@@ -36,7 +37,7 @@ type RedisQueue struct {
 func NewRedisQueue(list []string, decode interface{}) *RedisQueue {
 	return &RedisQueue{
 		c: redis.NewClient(&redis.Options{
-			Addr:     "localhost:6379",
+			Addr:     config.Fetch().RedisHost,
 			Password: "",
 			DB:       0,
 		}),
