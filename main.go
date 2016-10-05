@@ -48,9 +48,7 @@ func startProcessors(s *processor.Summoners, m *processor.Matches, logger *logru
 	}()
 }
 
-func startServer(
-	logger *logrus.Logger, cfg *config.AppConfig, injector inject.Injector,
-) {
+func startServer(logger *logrus.Logger, cfg *config.AppConfig, injector inject.Injector) {
 	// Listen on port
 	port := fmt.Sprintf(":%d", cfg.Port)
 	lis, err := net.Listen("tcp", port)
