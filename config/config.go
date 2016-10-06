@@ -27,8 +27,11 @@ type AppConfig struct {
 	// CharonHost is the Charon host/port.
 	CharonHost string `envconfig:"charon_host" default:"localhost:5609"`
 
-	// RedisHost is the Redus host for the queue
+	// RedisHost is the Redis host for the queue
 	RedisHost string `envconfig:"redis_host" default:"localhost:6379"`
+
+	// Concurrency is the number of parallel threads
+	Concurrency int `envconfig:"concurrency" default:"60"`
 }
 
 // Fetch fetches the config from env vars

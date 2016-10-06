@@ -18,10 +18,6 @@ import (
 	"github.com/simplyianm/inject"
 )
 
-const (
-	concurrency = 5
-)
-
 func main() {
 	inject := lib.NewInjector()
 
@@ -36,12 +32,14 @@ func main() {
 	}
 }
 
-func startProcessors(s *processor.Summoners, m *processor.Matches, logger *logrus.Logger) {
+func startProcessors(
+	cfg *config.AppConfig, s *processor.Summoners, m *processor.Matches, logger *logrus.Logger,
+) {
 	go func() {
-		for i := 0; i < concurrency; i++ {
+		for i := 0; i < cfg.Concurrency; i++ {
 			go s.Start()
 		}
-		for i := 0; i < concurrency; i++ {
+		for i := 0; i < cfg.Concurrency; i++ {
 			go m.Start()
 		}
 		s.Seed()
