@@ -19,7 +19,7 @@ type Matches struct {
 	Ranks     *rank.LookupService `inject:"t"`
 	Summoners *Summoners          `inject:"t"`
 
-	q      *queue.MatchQueue
+	q      queue.Queue
 	cutoff *apb.Rank
 }
 
@@ -50,7 +50,7 @@ func (m *Matches) Offer(info *apb.CharonMatchListResponse_MatchInfo) {
 // Start starts processing matches.
 func (m *Matches) Start() {
 	for {
-		m.process(m.q.Poll())
+		m.process(m.q.Poll().(*apb.MatchId))
 	}
 }
 

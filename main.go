@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	concurrency = 60
+	concurrency = 5
 )
 
 func main() {

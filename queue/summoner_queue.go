@@ -1,10 +1,9 @@
 package queue
 
 import (
-	"bytes"
-	"encoding/gob"
 	"fmt"
 
+	"github.com/golang/protobuf/proto"
 	"gopkg.in/redis.v4"
 
 	"github.com/asunaio/bacchus/config"
@@ -12,12 +11,8 @@ import (
 )
 
 type SummonerQueue struct {
-	c             *redis.Client `inject:"t"`
-	SummonerLists []string
-}
-
-func init() {
-	gob.Register(apb.SummonerId{})
+	c    *redis.Client `inject:"t"`
+	List []string
 }
 
 func NewSummonerQueue() *SummonerQueue {
@@ -27,33 +22,24 @@ func NewSummonerQueue() *SummonerQueue {
 			Password: "",
 			DB:       0,
 		}),
-		SummonerLists: []string{
+		List: []string{
 			"0x70", "0x60", "0x50", "0x40", "0x30", "0x20", "0x10",
 		},
 	}
 }
 
-func (q *SummonerQueue) Add(in *apb.SummonerId, ctx *apb.Ranking) {
-	b := bytes.Buffer{}
-	e := gob.NewEncoder(&b)
-	if err := e.Encode(*in); err != nil {
-		return
-	}
-	q.c.RPush(fmt.Sprintf("%#x", ctx.Rank.Tier), b.Bytes())
+func (q *SummonerQueue) Add(in interface{}, ctx interface{}) {
+	list := fmt.Sprintf("%#x", ctx.(*apb.Ranking).Rank.Tier)
+	q.c.RPush(list, in.(*apb.SummonerId).String())
 }
 
-func (q *SummonerQueue) Poll() *apb.SummonerId {
-	r, err := q.c.BLPop(0, q.SummonerLists...).Result()
+func (q *SummonerQueue) Poll() interface{} {
+	r, err := q.c.BLPop(0, q.List...).Result()
 	if err != nil {
 		return nil
 	}
 	data := &apb.SummonerId{}
-	b := bytes.Buffer{}
-	b.Write([]byte(r[1]))
-	d := gob.NewDecoder(&b)
-	err = d.Decode(data)
-	if err != nil {
-		fmt.Println(err)
+	if err := proto.UnmarshalText(r[1], data); err != nil {
 		return nil
 	}
 	return data

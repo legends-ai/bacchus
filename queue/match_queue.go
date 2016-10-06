@@ -1,9 +1,8 @@
 package queue
 
 import (
-	"bytes"
-	"encoding/gob"
-
+	"fmt"
+	"github.com/golang/protobuf/proto"
 	"gopkg.in/redis.v4"
 
 	"github.com/asunaio/bacchus/config"
@@ -11,12 +10,8 @@ import (
 )
 
 type MatchQueue struct {
-	c         *redis.Client `inject:"t"`
-	MatchList string
-}
-
-func init() {
-	gob.Register(apb.MatchId{})
+	c    *redis.Client
+	List []string
 }
 
 func NewMatchQueue() *MatchQueue {
@@ -26,30 +21,22 @@ func NewMatchQueue() *MatchQueue {
 			Password: "",
 			DB:       0,
 		}),
-		MatchList: "MATCH",
+		List: []string{"MATCH"},
 	}
 }
 
-func (q *MatchQueue) Add(in *apb.MatchId, ctx *apb.CharonMatchListResponse_MatchInfo) {
-	b := bytes.Buffer{}
-	e := gob.NewEncoder(&b)
-	if err := e.Encode(*in); err != nil {
-		return
-	}
-	q.c.RPush(q.MatchList, b.Bytes())
+func (q *MatchQueue) Add(in interface{}, ctx interface{}) {
+	q.c.RPush(q.List[0], in.(*apb.MatchId).String())
 }
 
-func (q *MatchQueue) Poll() *apb.MatchId {
-	r, err := q.c.BLPop(0, q.MatchList).Result()
+func (q *MatchQueue) Poll() interface{} {
+	r, err := q.c.BLPop(0, q.List...).Result()
 	if err != nil {
+		fmt.Println(err)
 		return nil
 	}
 	data := &apb.MatchId{}
-	b := bytes.Buffer{}
-	b.Write([]byte(r[1]))
-	d := gob.NewDecoder(&b)
-	err = d.Decode(data)
-	if err != nil {
+	if err := proto.UnmarshalText(r[1], data); err != nil {
 		return nil
 	}
 	return data

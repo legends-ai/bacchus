@@ -20,7 +20,7 @@ type Summoners struct {
 	Metrics  *Metrics         `inject:"t"`
 	Rankings *db.RankingsDAO  `inject:"t"`
 
-	q        *queue.SummonerQueue
+	q        queue.Queue
 	exists   map[*apb.SummonerId]bool
 	existsMu sync.RWMutex
 }
@@ -46,7 +46,7 @@ func (s *Summoners) Offer(ranking *apb.Ranking) {
 // Start starts processing summoners.
 func (s *Summoners) Start() {
 	for {
-		s.process(s.q.Poll())
+		s.process(s.q.Poll().(*apb.SummonerId))
 	}
 }
 

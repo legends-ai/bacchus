@@ -23,11 +23,6 @@ type Queue interface {
 	Poll() interface{}
 }
 
-func init() {
-	gob.Register(apb.SummonerId{})
-	gob.Register(apb.MatchId{})
-}
-
 type RedisQueue struct {
 	c      *redis.Client
 	decode interface{}
