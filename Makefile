@@ -27,6 +27,9 @@ syncproto:
 docker-build:
 	docker build -t bacchus .
 
+charontunnel:
+	ssh -fNL 5609:charon.marathon.mesos:5609 centos@52.42.103.191
+
 docker-push:
 	docker tag bacchus:latest 096202052535.dkr.ecr.us-west-2.amazonaws.com/bacchus:latest
 	docker push 096202052535.dkr.ecr.us-west-2.amazonaws.com/bacchus:latest

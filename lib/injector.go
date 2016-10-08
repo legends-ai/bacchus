@@ -10,6 +10,7 @@ import (
 	"github.com/asunaio/bacchus/db"
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/processor"
+	"github.com/asunaio/bacchus/queue"
 	"github.com/asunaio/bacchus/rank"
 )
 
@@ -48,10 +49,22 @@ func NewInjector() inject.Injector {
 		Addr:     cfg.RedisHost,
 		Password: "",
 		DB:       0,
+		PoolSize: 150,
 	})
 	_, err = redisConn.Ping().Result()
 	if err != nil {
 		logger.Fatalf("Could not connect to Redis: %v", err)
+	}
+	injector.Map(redisConn)
+
+	// Initialize queues
+	_, err = injector.ApplyMap(queue.NewMatchQueue())
+	if err != nil {
+		logger.Fatalf("Could not inject match queue: %v", err)
+	}
+	_, err = injector.ApplyMap(queue.NewSummonerQueue())
+	if err != nil {
+		logger.Fatalf("Could not inject summoner queue: %v", err)
 	}
 
 	// DAOs

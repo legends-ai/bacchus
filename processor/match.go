@@ -18,8 +18,8 @@ type Matches struct {
 	Metrics   *Metrics            `inject:"t"`
 	Ranks     *rank.LookupService `inject:"t"`
 	Summoners *Summoners          `inject:"t"`
+	Queue     *queue.MatchQueue   `inject:"t"`
 
-	q      queue.Queue
 	cutoff *apb.Rank
 }
 
@@ -27,7 +27,6 @@ type Matches struct {
 func NewMatches() *Matches {
 	cutoff, _ := models.ParseRank(models.TierPlatinum, models.DivisionV)
 	return &Matches{
-		q:      queue.NewMatchQueue(),
 		cutoff: cutoff,
 	}
 }
@@ -44,13 +43,13 @@ func (m *Matches) Offer(info *apb.CharonMatchListResponse_MatchInfo) {
 		// don't scrape duplicate matches
 		return
 	}
-	m.q.Add(info.MatchId, info)
+	m.Queue.Add(info.MatchId, info)
 }
 
 // Start starts processing matches.
 func (m *Matches) Start() {
 	for {
-		m.process(m.q.Poll().(*apb.MatchId))
+		m.process(m.Queue.Poll())
 	}
 }
 

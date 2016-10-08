@@ -14,13 +14,13 @@ import (
 
 // Queues is the processor for queues.
 type Summoners struct {
-	Charon   apb.CharonClient `inject:"t"`
-	Logger   *logrus.Logger   `inject:"t"`
-	Matches  *Matches         `inject:"t"`
-	Metrics  *Metrics         `inject:"t"`
-	Rankings *db.RankingsDAO  `inject:"t"`
+	Charon   apb.CharonClient     `inject:"t"`
+	Logger   *logrus.Logger       `inject:"t"`
+	Matches  *Matches             `inject:"t"`
+	Metrics  *Metrics             `inject:"t"`
+	Rankings *db.RankingsDAO      `inject:"t"`
+	Queue    *queue.SummonerQueue `inject:"t"`
 
-	q        queue.Queue
 	exists   map[*apb.SummonerId]bool
 	existsMu sync.RWMutex
 }
@@ -28,7 +28,6 @@ type Summoners struct {
 // NewSummoners creates a new processor.Summoners.
 func NewSummoners() *Summoners {
 	return &Summoners{
-		q:      queue.NewSummonerQueue(),
 		exists: map[*apb.SummonerId]bool{},
 	}
 }
@@ -40,13 +39,13 @@ func (s *Summoners) Offer(ranking *apb.Ranking) {
 	if s.exists[ranking.Summoner] {
 		return
 	}
-	s.q.Add(ranking.Summoner, ranking)
+	s.Queue.Add(ranking.Summoner, ranking)
 }
 
 // Start starts processing summoners.
 func (s *Summoners) Start() {
 	for {
-		s.process(s.q.Poll().(*apb.SummonerId))
+		s.process(s.Queue.Poll())
 	}
 }
 

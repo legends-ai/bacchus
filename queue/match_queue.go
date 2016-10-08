@@ -1,42 +1,44 @@
 package queue
 
 import (
-	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
 	"gopkg.in/redis.v4"
 
-	"github.com/asunaio/bacchus/config"
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 )
 
 type MatchQueue struct {
-	c    *redis.Client
-	List []string
+	Logger *logrus.Logger `inject:"t"`
+	Redis  *redis.Client  `inject:"t"`
+	List   []string
 }
 
 func NewMatchQueue() *MatchQueue {
 	return &MatchQueue{
-		c: redis.NewClient(&redis.Options{
-			Addr:     config.Fetch().RedisHost,
-			Password: "",
-			DB:       0,
-		}),
 		List: []string{"MATCH"},
 	}
 }
 
-func (q *MatchQueue) Add(in interface{}, ctx interface{}) {
-	q.c.RPush(q.List[0], in.(*apb.MatchId).String())
+func (q *MatchQueue) Add(in *apb.MatchId, ctx *apb.CharonMatchListResponse_MatchInfo) {
+	list := q.List[0]
+	match := in.String()
+
+	_, err := q.Redis.RPush(list, match).Result()
+	if err != nil {
+		q.Logger.Warnf("RPUSH %v to %v failed: %v", match, list, err)
+	}
 }
 
-func (q *MatchQueue) Poll() interface{} {
-	r, err := q.c.BLPop(0, q.List...).Result()
+func (q *MatchQueue) Poll() *apb.MatchId {
+	r, err := q.Redis.BLPop(0, q.List...).Result()
 	if err != nil {
-		fmt.Println(err)
+		q.Logger.Warnf("BLPOP %v failed: %v", q.List, err)
 		return nil
 	}
 	data := &apb.MatchId{}
 	if err := proto.UnmarshalText(r[1], data); err != nil {
+		q.Logger.Warnf("UnmarshalText %v failed: %v", r[1], err)
 		return nil
 	}
 	return data
