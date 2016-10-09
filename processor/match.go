@@ -40,7 +40,7 @@ func (m *Matches) Offer(info *apb.CharonMatchListResponse_MatchInfo) {
 		return
 	}
 	if ok {
-		// don't scrape duplicate matches
+		m.Metrics.Record("match-duplicates")
 		return
 	}
 	m.Queue.Add(info.MatchId, info)
