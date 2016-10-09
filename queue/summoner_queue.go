@@ -36,9 +36,15 @@ func (q *SummonerQueue) Start() {
 		set := fmt.Sprintf("S%s", r[0])
 		_, err = q.Redis.SRem(set, r[1]).Result()
 		for i := 1; err != nil && i <= 3; i++ {
-			q.Logger.Warnf("SREM %v from %v failed: %v", r[1], r[0], err)
+			q.Logger.Warnf("SREM %v from %v failed: %v", set, r[0], err)
 			q.Logger.Warnf("Retry %v | Retries left: %v", i, 3-i)
-			_, err = q.Redis.SRem(r[0], r[1]).Result()
+			_, err = q.Redis.SRem(set, r[1]).Result()
+		}
+
+		if err != nil {
+			q.Logger.Warnf("SREM %v from %v failed 3 times: %v", set, r[0], err)
+			q.Logger.Warnf("Moving on - %v will never be parsed again...", r[0])
+			continue
 		}
 
 		var data apb.SummonerId
