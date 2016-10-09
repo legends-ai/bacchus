@@ -14,6 +14,7 @@ import (
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/lib"
 	"github.com/asunaio/bacchus/processor"
+	"github.com/asunaio/bacchus/queue"
 	"github.com/asunaio/bacchus/server"
 	"github.com/simplyianm/inject"
 )
@@ -33,7 +34,9 @@ func main() {
 }
 
 func startProcessors(
-	cfg *config.AppConfig, s *processor.Summoners, m *processor.Matches, logger *logrus.Logger,
+	cfg *config.AppConfig, logger *logrus.Logger,
+	s *processor.Summoners, m *processor.Matches,
+	sq *queue.SummonerQueue, mq *queue.MatchQueue,
 ) {
 	go func() {
 		for i := 0; i < cfg.Concurrency; i++ {
@@ -42,6 +45,8 @@ func startProcessors(
 		for i := 0; i < cfg.Concurrency; i++ {
 			go m.Start()
 		}
+		go sq.Start()
+		go mq.Start()
 		s.Seed()
 	}()
 }

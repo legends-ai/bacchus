@@ -49,7 +49,7 @@ func NewInjector() inject.Injector {
 		Addr:     cfg.RedisHost,
 		Password: "",
 		DB:       0,
-		PoolSize: 150,
+		PoolSize: 10,
 	})
 	_, err = redisConn.Ping().Result()
 	if err != nil {

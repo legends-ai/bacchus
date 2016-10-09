@@ -12,11 +12,29 @@ type MatchQueue struct {
 	Logger *logrus.Logger `inject:"t"`
 	Redis  *redis.Client  `inject:"t"`
 	List   []string
+	c      chan *apb.MatchId
 }
 
 func NewMatchQueue() *MatchQueue {
 	return &MatchQueue{
 		List: []string{"MATCH"},
+		c:    make(chan *apb.MatchId, 10),
+	}
+}
+
+func (q *MatchQueue) Start() {
+	for {
+		r, err := q.Redis.BLPop(0, q.List...).Result()
+		if err != nil {
+			q.Logger.Warnf("BLPOP %v failed: %v", q.List, err)
+			continue
+		}
+		var data apb.MatchId
+		if err := proto.UnmarshalText(r[1], &data); err != nil {
+			q.Logger.Warnf("UnmarshalText %v failed: %v", r[1], err)
+			continue
+		}
+		q.c <- &data
 	}
 }
 
@@ -31,15 +49,5 @@ func (q *MatchQueue) Add(in *apb.MatchId, ctx *apb.CharonMatchListResponse_Match
 }
 
 func (q *MatchQueue) Poll() *apb.MatchId {
-	r, err := q.Redis.BLPop(0, q.List...).Result()
-	if err != nil {
-		q.Logger.Warnf("BLPOP %v failed: %v", q.List, err)
-		return nil
-	}
-	data := &apb.MatchId{}
-	if err := proto.UnmarshalText(r[1], data); err != nil {
-		q.Logger.Warnf("UnmarshalText %v failed: %v", r[1], err)
-		return nil
-	}
-	return data
+	return <-q.c
 }
