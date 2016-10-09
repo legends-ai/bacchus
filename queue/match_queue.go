@@ -42,8 +42,7 @@ func (q *MatchQueue) Add(in *apb.MatchId, ctx *apb.CharonMatchListResponse_Match
 	list := q.List[0]
 	match := in.String()
 
-	_, err := q.Redis.RPush(list, match).Result()
-	if err != nil {
+	if _, err := q.Redis.RPush(list, match).Result(); err != nil {
 		q.Logger.Warnf("RPUSH %v to %v failed: %v", match, list, err)
 	}
 }

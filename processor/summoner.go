@@ -1,8 +1,6 @@
 package processor
 
 import (
-	"sync"
-
 	"github.com/Sirupsen/logrus"
 	"golang.org/x/net/context"
 
@@ -20,25 +18,15 @@ type Summoners struct {
 	Metrics  *Metrics             `inject:"t"`
 	Rankings *db.RankingsDAO      `inject:"t"`
 	Queue    *queue.SummonerQueue `inject:"t"`
-
-	exists   map[*apb.SummonerId]bool
-	existsMu sync.RWMutex
 }
 
 // NewSummoners creates a new processor.Summoners.
 func NewSummoners() *Summoners {
-	return &Summoners{
-		exists: map[*apb.SummonerId]bool{},
-	}
+	return &Summoners{}
 }
 
 // Offer offers a summoner to the queue which may accept it.
 func (s *Summoners) Offer(ranking *apb.Ranking) {
-	s.existsMu.RLock()
-	defer s.existsMu.RUnlock()
-	if s.exists[ranking.Summoner] {
-		return
-	}
 	s.Queue.Add(ranking.Summoner, ranking)
 }
 
@@ -99,12 +87,7 @@ func (s *Summoners) process(id *apb.SummonerId) {
 		return
 	}
 
-	// lock
-	s.existsMu.Lock()
-	s.exists[id] = true
-	s.existsMu.Unlock()
-
-	// offer le games
+	// offer les games
 	for _, match := range res.Matches {
 		s.Matches.Offer(match)
 	}

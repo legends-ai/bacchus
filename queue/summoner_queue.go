@@ -32,6 +32,15 @@ func (q *SummonerQueue) Start() {
 			q.Logger.Warnf("BLPOP %v failed: %v", q.List, err)
 			continue
 		}
+
+		set := fmt.Sprintf("S%s", r[0])
+		_, err = q.Redis.SRem(set, r[1]).Result()
+		for i := 1; err != nil && i <= 3; i++ {
+			q.Logger.Warnf("SREM %v from %v failed: %v", r[1], r[0], err)
+			q.Logger.Warnf("Retry %v | Retries left: %v", i, 3-i)
+			_, err = q.Redis.SRem(r[0], r[1]).Result()
+		}
+
 		var data apb.SummonerId
 		if err := proto.UnmarshalText(r[1], &data); err != nil {
 			q.Logger.Warnf("UnmarshalText %v failed: %v", r[1], err)
@@ -43,10 +52,21 @@ func (q *SummonerQueue) Start() {
 
 func (q *SummonerQueue) Add(in *apb.SummonerId, ctx *apb.Ranking) {
 	list := fmt.Sprintf("%#x", ctx.Rank.Tier)
+	set := fmt.Sprintf("S%s", list)
 	summoner := in.String()
 
-	_, err := q.Redis.RPush(list, summoner).Result()
-	if err != nil {
+	if exists, err := q.Redis.SIsMember(set, summoner).Result(); err != nil {
+		q.Logger.Warnf("SISMEMBER %v in %v failed: %v", summoner, set, err)
+	} else if exists {
+		return
+	}
+
+	if _, err := q.Redis.SAdd(set, summoner).Result(); err != nil {
+		q.Logger.Warnf("SADD %v to %v failed: %v", summoner, set, err)
+		return
+	}
+
+	if _, err := q.Redis.RPush(list, summoner).Result(); err != nil {
 		q.Logger.Warnf("RPUSH %v to %v failed: %v", summoner, list, err)
 	}
 }
