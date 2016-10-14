@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	hasMatchQuery    = `SELECT COUNT(*) FROM matches WHERE id = ?`
-	insertMatchQuery = `INSERT INTO matches (id, region, body, rank, patch) VALUES (?, ?, ?, ?, ?)`
+	hasMatchQuery    = `SELECT COUNT(*) FROM matches_serialized WHERE id = ?`
+	insertMatchQuery = `INSERT INTO matches_serialized (id, region, rank, patch, data) VALUES (?, ?, ?, ?, ?)`
 )
 
 // MatchesDAO is a matches DAO.
@@ -28,10 +28,10 @@ func (m *MatchesDAO) Exists(id *apb.MatchId) (bool, error) {
 }
 
 // Insert inserts a match to Cassandra.
-func (a *MatchesDAO) Insert(m *apb.RawMatch) error {
+func (a *MatchesDAO) Insert(m *apb.BacchusData_RawMatch) error {
 	return a.Session.Query(
 		insertMatchQuery, models.StringifyMatchId(m.Id),
-		m.Id.Region.String(), m.Body, models.RankToNumber(m.Rank),
+		m.Id.Region.String(), models.RankToNumber(m.Rank), m.Data,
 		m.Patch,
 	).Exec()
 }

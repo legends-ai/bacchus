@@ -42,7 +42,7 @@ func (b *batchRegion) batch() {
 		}
 
 		// Make request
-		res, err := b.b.Charon.GetRankings(context.TODO(), &apb.CharonRankingsRequest{
+		res, err := b.b.Charon.GetRankings(context.TODO(), &apb.CharonRpc_RankingsRequest{
 			Region:      b.r,
 			SummonerIds: lookup,
 		})
@@ -60,7 +60,7 @@ func (b *batchRegion) batch() {
 
 		// return results
 		for _, s := range subs {
-			s.c <- res.Payload.Rankings[s.id.Id]
+			s.c <- res.Rankings[s.id.Id]
 			close(s.c)
 			close(s.e)
 			subs = []*subscription{}
