@@ -22,6 +22,7 @@ func NewSummonerQueue() *SummonerQueue {
 		List: []string{
 			"0x70", "0x60", "0x50", "0x40", "0x30", "0x20", "0x10",
 		},
+		c: make(chan *apb.SummonerId, 10),
 	}
 }
 
