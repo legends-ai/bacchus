@@ -2,6 +2,7 @@ package db
 
 import (
 	"github.com/gocql/gocql"
+	"github.com/golang/protobuf/proto"
 
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/models"
@@ -29,9 +30,13 @@ func (m *MatchesDAO) Exists(id *apb.MatchId) (bool, error) {
 
 // Insert inserts a match to Cassandra.
 func (a *MatchesDAO) Insert(m *apb.BacchusData_RawMatch) error {
+	data, err := proto.Marshal(m.Data)
+	if err != nil {
+		return err
+	}
+
 	return a.Session.Query(
 		insertMatchQuery, models.StringifyMatchId(m.Id),
-		m.Id.Region.String(), models.RankToNumber(m.Rank), m.Data,
-		m.Patch,
+		m.Id.Region.String(), models.RankToNumber(m.Rank), m.Patch, data,
 	).Exec()
 }

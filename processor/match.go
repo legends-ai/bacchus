@@ -82,6 +82,7 @@ func (m *Matches) process(id *apb.MatchId) {
 			m.Summoners.Offer(ranking)
 		}
 	}
+
 	rank := models.MedianRank(ranks)
 	if rank == nil {
 		m.Logger.Errorf("Outdated ranks for match %s", id)
