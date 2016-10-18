@@ -1,6 +1,6 @@
 all: clean build
 
-build:
+build: genproto
 	go build .
 
 clean:
