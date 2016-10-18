@@ -1,5 +1,5 @@
 hash: a0ac103a00f1a87d5c200143fd83d812120034b2d24ad27f9aded2d3bdc5c942
-updated: 2016-10-14T02:38:59.578795703-05:00
+updated: 2016-10-18T02:56:16.585970309-05:00
 imports:
 - name: github.com/gocql/gocql
   version: ffae44103aa14ada9e2b342329f44ce354f399fd
@@ -14,6 +14,7 @@ imports:
   - ptypes
   - ptypes/any
   - ptypes/duration
+  - ptypes/empty
   - ptypes/timestamp
 - name: github.com/golang/snappy
   version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
@@ -38,7 +39,7 @@ imports:
   - lex/httplex
   - trace
 - name: golang.org/x/sys
-  version: 9bb9f0998d48b31547d975974935ae9b48c7a03c
+  version: 002cbb5f952456d0c50e0d2aff17ea5eca716979
   subpackages:
   - unix
 - name: google.golang.org/grpc
@@ -57,7 +58,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/redis.v4
-  version: 5a272d03b960a72c61e5025a7d6e8da5d8815442
+  version: 8a8d997ad58dc600d2ff0f64914102192f3b51ac
   subpackages:
   - internal
   - internal/consistenthash
@@ -67,7 +68,7 @@ imports:
   - internal/proto
 testImports:
 - name: github.com/davecgh/go-spew
-  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
   subpackages:
   - spew
 - name: github.com/pmezard/go-difflib
