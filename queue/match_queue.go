@@ -38,7 +38,7 @@ func (q *MatchQueue) Start() {
 	}
 }
 
-func (q *MatchQueue) Add(in *apb.MatchId, ctx *apb.CharonMatchListResponse_MatchInfo) {
+func (q *MatchQueue) Add(in *apb.MatchId, ctx *apb.CharonRpc_MatchListResponse_MatchInfo) {
 	list := q.List[0]
 	match := in.String()
 

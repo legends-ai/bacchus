@@ -73,7 +73,7 @@ func (s *Summoners) Seed() {
 
 func (s *Summoners) process(id *apb.SummonerId) {
 	// process the summoner
-	res, err := s.Charon.GetMatchList(context.TODO(), &apb.CharonMatchListRequest{
+	res, err := s.Charon.GetMatchList(context.TODO(), &apb.CharonRpc_MatchListRequest{
 		Summoner: id,
 		Seasons: []string{
 			"PRESEASON2015",

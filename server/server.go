@@ -13,8 +13,8 @@ type Server struct {
 
 // Ingest implements the Bacchus.Ingest RPC endpoint.
 func (s *Server) Ingest(
-	ctx context.Context, in *apb.IngestRequest,
-) (*apb.IngestResponse, error) {
+	ctx context.Context, in *apb.BacchusRpc_IngestRequest,
+) (*apb.BacchusRpc_IngestResponse, error) {
 	// TODO(igm): implement
 	return nil, nil
 }

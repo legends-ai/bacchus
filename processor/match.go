@@ -32,7 +32,7 @@ func NewMatches() *Matches {
 }
 
 // Offer offers a match to the queue which may accept it.
-func (m *Matches) Offer(info *apb.CharonMatchListResponse_MatchInfo) {
+func (m *Matches) Offer(info *apb.CharonRpc_MatchListResponse_MatchInfo) {
 	// if key exists in cassandra return
 	ok, err := m.Matches.Exists(info.MatchId)
 	if err != nil {
@@ -55,7 +55,7 @@ func (m *Matches) Start() {
 
 func (m *Matches) process(id *apb.MatchId) {
 	// Retrieve match data
-	res, err := m.Charon.GetMatch(context.TODO(), &apb.CharonMatchRequest{
+	res, err := m.Charon.GetMatch(context.TODO(), &apb.CharonRpc_MatchRequest{
 		Match: id,
 	})
 	if err != nil {
@@ -66,7 +66,7 @@ func (m *Matches) process(id *apb.MatchId) {
 	m.Metrics.Record("match-fetch")
 
 	// Fetch summoners from match
-	ids := res.Payload.Summoners
+	ids := res.Summoners
 
 	// Get min rank of players
 	sums, err := m.Ranks.Lookup(ids)
@@ -82,6 +82,7 @@ func (m *Matches) process(id *apb.MatchId) {
 			m.Summoners.Offer(ranking)
 		}
 	}
+
 	rank := models.MedianRank(ranks)
 	if rank == nil {
 		m.Logger.Errorf("Outdated ranks for match %s", id)
@@ -89,11 +90,11 @@ func (m *Matches) process(id *apb.MatchId) {
 	}
 
 	// Write match to Cassandra
-	if err := m.Matches.Insert(&apb.RawMatch{
+	if err := m.Matches.Insert(&apb.BacchusData_RawMatch{
 		Id:    id,
-		Patch: res.Payload.MatchVersion,
+		Patch: res.MatchInfo.Version,
 		Rank:  rank,
-		Body:  res.Payload.RawJson,
+		Data:  res.MatchInfo,
 	}); err != nil {
 		m.Logger.Errorf("Could not insert match to Cassandra: %v", err)
 	}
