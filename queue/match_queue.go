@@ -93,6 +93,13 @@ func (q *MatchQueue) Add(in *apb.MatchId, ctx *apb.CharonRpc_MatchListResponse_M
 		}
 	}
 
+	if llen, err := q.Redis.LLen(list).Result(); err != nil {
+		q.Logger.Warnf("LLEN %v failed (skipping this match): %v", list, err)
+		return
+	} else if llen >= 1000000 {
+		return
+	}
+
 	match := in.String()
 	q.mx.RLock()
 	if _, err := q.Redis.RPush(list, match).Result(); err != nil {

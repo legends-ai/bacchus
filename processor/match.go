@@ -34,15 +34,14 @@ func NewMatches() *Matches {
 // Offer offers a match to the queue which may accept it.
 func (m *Matches) Offer(info *apb.CharonRpc_MatchListResponse_MatchInfo) {
 	// if key exists in cassandra return
-	ok, err := m.Matches.Exists(info.MatchId)
-	if err != nil {
+	if ok, err := m.Matches.Exists(info.MatchId); err != nil {
 		m.Logger.Warnf("Could not check match: %v", err)
 		return
-	}
-	if ok {
+	} else if ok {
 		m.Metrics.Record("match-duplicates")
 		return
 	}
+
 	m.Queue.Add(info.MatchId, info)
 }
 

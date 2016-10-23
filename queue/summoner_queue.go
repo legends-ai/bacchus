@@ -68,6 +68,13 @@ func (q *SummonerQueue) Add(in *apb.SummonerId, ctx *apb.Ranking) {
 		return
 	}
 
+	if llen, err := q.Redis.LLen(list).Result(); err != nil {
+		q.Logger.Warnf("LLEN %v failed (skipping this summoner): %v", list, err)
+		return
+	} else if llen >= 1000000 {
+		return
+	}
+
 	if _, err := q.Redis.SAdd(set, summoner).Result(); err != nil {
 		q.Logger.Warnf("SADD %v to %v failed: %v", summoner, set, err)
 		return
