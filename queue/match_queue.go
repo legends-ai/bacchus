@@ -37,10 +37,12 @@ func (s MatchQueueList) Swap(i, j int) {
 type MatchQueue struct {
 	Logger *logrus.Logger `inject:"t"`
 	Redis  *redis.Client  `inject:"t"`
-	List   []string
-	Set    string
-	c      chan *apb.MatchId
-	mx     sync.RWMutex
+
+	// List is the list of match queues. This is used to BLPOP from the most important queue.
+	List []string
+	Set  string
+	c    chan *apb.MatchId
+	mx   sync.RWMutex
 }
 
 func NewMatchQueue() *MatchQueue {
@@ -52,10 +54,20 @@ func NewMatchQueue() *MatchQueue {
 }
 
 func (q *MatchQueue) Start() {
+	// refresh queues on startup in case they already exist in redis
+	if err := q.refreshQueues(); err != nil {
+		q.Logger.Warnf("Could not refresh match queues: %v", err)
+		return
+	}
+
 	for {
 		if len(q.List) < 1 {
+			// We sleep so we don't do a 1 Infinite Loop (thanks pradyuman)
+			time.Sleep(500 * time.Millisecond)
 			continue
 		}
+
+		// Pop from the most important queue
 		r, err := q.Redis.BLPop(0, q.List...).Result()
 		if err != nil {
 			q.Logger.Warnf("BLPOP %v failed: %v", q.List, err)
@@ -82,14 +94,9 @@ func (q *MatchQueue) Add(in *apb.MatchId, ctx *apb.CharonRpc_MatchListResponse_M
 			return
 		}
 
-		if set, err := q.Redis.SMembers(q.Set).Result(); err != nil {
-			q.Logger.Warnf("SMEMBERS %v failed: %v", q.Set, err)
+		if err := q.refreshQueues(); err != nil {
+			q.Logger.Warnf("Could not refresh match queues: %v", err)
 			return
-		} else {
-			sort.Sort(MatchQueueList(set))
-			q.mx.Lock()
-			q.List = set
-			q.mx.Unlock()
 		}
 	}
 
@@ -110,4 +117,17 @@ func (q *MatchQueue) Add(in *apb.MatchId, ctx *apb.CharonRpc_MatchListResponse_M
 
 func (q *MatchQueue) Poll() *apb.MatchId {
 	return <-q.c
+}
+
+// refreshQueues refreshes the list of match queues in memory.
+func (q *MatchQueue) refreshQueues() error {
+	queues, err := q.Redis.Keys("MATCH:*").Result()
+	if err != nil {
+		return err
+	}
+	sort.Sort(MatchQueueList(queues))
+	q.mx.Lock()
+	q.List = queues
+	q.mx.Unlock()
+	return nil
 }
