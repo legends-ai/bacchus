@@ -22,7 +22,7 @@ type MatchesDAO struct {
 // Exists returns true if a match exists.
 func (m *MatchesDAO) Exists(id *apb.MatchId) (bool, error) {
 	var count int
-	if err := m.Session.Query(hasMatchQuery, id.String()).Scan(&count); err != nil {
+	if err := m.Session.Query(hasMatchQuery, models.StringifyMatchId(id)).Scan(&count); err != nil {
 		return false, err
 	}
 	return count != 0, nil
