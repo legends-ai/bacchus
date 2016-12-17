@@ -5,7 +5,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
-	"gopkg.in/redis.v4"
+	"gopkg.in/redis.v5"
 
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 )

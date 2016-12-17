@@ -1,5 +1,26 @@
 package: github.com/asunaio/bacchus
 import:
-- package: github.com/kelseyhightower/envconfig
+- package: github.com/Sirupsen/logrus
+  version: ^0.11.0
 - package: github.com/gocql/gocql
-- package: github.com/simplyianm/keypool
+- package: github.com/golang/protobuf
+  subpackages:
+  - proto
+  - ptypes
+  - ptypes/empty
+  - ptypes/timestamp
+- package: github.com/kelseyhightower/envconfig
+  version: ^1.2.0
+- package: github.com/simplyianm/inject
+- package: golang.org/x/net
+  subpackages:
+  - context
+- package: google.golang.org/grpc
+  version: ^1.0.5
+- package: gopkg.in/redis.v5
+  version: ^5.1.3
+testImport:
+- package: github.com/stretchr/testify
+  version: ^1.1.4
+  subpackages:
+  - assert

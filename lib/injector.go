@@ -4,7 +4,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/simplyianm/inject"
 	"google.golang.org/grpc"
-	"gopkg.in/redis.v4"
+	"gopkg.in/redis.v5"
 
 	"github.com/asunaio/bacchus/config"
 	"github.com/asunaio/bacchus/db"
