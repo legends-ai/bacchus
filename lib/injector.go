@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"github.com/Shopify/sarama"
 	"github.com/Sirupsen/logrus"
 	"github.com/simplyianm/inject"
 	"google.golang.org/grpc"
@@ -27,7 +28,7 @@ func NewInjector() inject.Injector {
 	cfg := config.Fetch()
 	injector.Map(cfg)
 
-	// Create a client for Charon
+	// Charon Client
 	logger.Infof("Connecting to Charon at %s", cfg.CharonHost)
 	charonConn, err := grpc.Dial(cfg.CharonHost, grpc.WithInsecure())
 	if err != nil {
@@ -44,6 +45,7 @@ func NewInjector() inject.Injector {
 	}
 	injector.Map(session)
 
+	// Redis Client
 	logger.Infof("Connecting to Redis at %s", cfg.RedisHost)
 	redisConn := redis.NewClient(&redis.Options{
 		Addr:     cfg.RedisHost,
@@ -56,6 +58,14 @@ func NewInjector() inject.Injector {
 		logger.Fatalf("Could not connect to Redis: %v", err)
 	}
 	injector.Map(redisConn)
+
+	// Kafka Producer
+	logger.Infof("Creating Kafka Producer at %v", cfg.KafkaBroker)
+	producer, err := sarama.NewAsyncProducer([]string{cfg.KafkaBroker}, nil)
+	if err != nil {
+		logger.Fatalf("Could not create kafka producer: %v", err)
+	}
+	injector.Map(producer)
 
 	// Initialize queues
 	_, err = injector.ApplyMap(queue.NewMatchQueue())

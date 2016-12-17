@@ -1,24 +1,27 @@
 package processor
 
 import (
+	"github.com/Shopify/sarama"
 	"github.com/Sirupsen/logrus"
 	"github.com/asunaio/bacchus/db"
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/models"
 	"github.com/asunaio/bacchus/queue"
 	"github.com/asunaio/bacchus/rank"
+	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context"
 )
 
 // Matches is the processor for matches.
 type Matches struct {
-	Charon    apb.CharonClient    `inject:"t"`
-	Logger    *logrus.Logger      `inject:"t"`
-	Matches   *db.MatchesDAO      `inject:"t"`
-	Metrics   *Metrics            `inject:"t"`
-	Ranks     *rank.LookupService `inject:"t"`
-	Summoners *Summoners          `inject:"t"`
-	Queue     *queue.MatchQueue   `inject:"t"`
+	Charon    apb.CharonClient     `inject:"t"`
+	Logger    *logrus.Logger       `inject:"t"`
+	Matches   *db.MatchesDAO       `inject:"t"`
+	Kafka     sarama.AsyncProducer `inject:"t"`
+	Metrics   *Metrics             `inject:"t"`
+	Ranks     *rank.LookupService  `inject:"t"`
+	Summoners *Summoners           `inject:"t"`
+	Queue     *queue.MatchQueue    `inject:"t"`
 
 	cutoff *apb.Rank
 }
@@ -47,6 +50,14 @@ func (m *Matches) Offer(info *apb.CharonRpc_MatchListResponse_MatchInfo) {
 
 // Start starts processing matches.
 func (m *Matches) Start() {
+
+	// Poll for producer errors
+	go func() {
+		for err := range m.Kafka.Errors() {
+			m.Logger.Errorf("Matches Producer Error: %v", err)
+		}
+	}()
+
 	for {
 		m.process(m.Queue.Poll())
 	}
@@ -88,14 +99,27 @@ func (m *Matches) process(id *apb.MatchId) {
 		return
 	}
 
-	// Write match to Cassandra
-	if err := m.Matches.Insert(&apb.BacchusData_RawMatch{
+	match, err := proto.Marshal(&apb.BacchusData_RawMatch{
 		Id:    id,
 		Patch: res.MatchInfo.Version,
 		Rank:  rank,
 		Data:  res.MatchInfo,
-	}); err != nil {
-		m.Logger.Errorf("Could not insert match to Cassandra: %v", err)
+	})
+
+	if err != nil {
+		m.Logger.Errorf("Error marshaling match: %v", err)
+		return
+	}
+
+	// Publish match record to Kafka
+	m.Kafka.Input() <- &sarama.ProducerMessage{
+		Topic: "bacchus.match." + id.Region.String(),
+		Value: sarama.ByteEncoder(match),
+	}
+
+	// Write match id to Cassandra
+	if err := m.Matches.Insert(id); err != nil {
+		m.Logger.Errorf("Could not insert match id to Cassandra: %v", err)
 	}
 
 	m.Metrics.Record("match-write")
