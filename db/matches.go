@@ -2,15 +2,14 @@ package db
 
 import (
 	"github.com/gocql/gocql"
-	"github.com/golang/protobuf/proto"
 
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/models"
 )
 
 const (
-	hasMatchQuery    = `SELECT COUNT(*) FROM matches_serialized WHERE id = ?`
-	insertMatchQuery = `INSERT INTO matches_serialized (id, region, rank, patch, data) VALUES (?, ?, ?, ?, ?)`
+	hasMatchQuery    = `SELECT COUNT(*) FROM match_set WHERE id = ?`
+	insertMatchQuery = `INSERT INTO match_set (id) VALUES (?)`
 )
 
 // MatchesDAO is a matches DAO.
@@ -28,15 +27,9 @@ func (m *MatchesDAO) Exists(id *apb.MatchId) (bool, error) {
 	return count != 0, nil
 }
 
-// Insert inserts a match to Cassandra.
-func (a *MatchesDAO) Insert(m *apb.BacchusData_RawMatch) error {
-	data, err := proto.Marshal(m.Data)
-	if err != nil {
-		return err
-	}
-
-	return a.Session.Query(
-		insertMatchQuery, models.StringifyMatchId(m.Id),
-		m.Id.Region.String(), models.RankToNumber(m.Rank), m.Patch, data,
+// Insert inserts a match id to Cassandra.
+func (m *MatchesDAO) Insert(id *apb.MatchId) error {
+	return m.Session.Query(
+		insertMatchQuery, models.StringifyMatchId(id),
 	).Exec()
 }

@@ -80,6 +80,8 @@ func (s *Summoners) process(id *apb.SummonerId) {
 			"SEASON2015",
 			"PRESEASON2016",
 			"SEASON2016",
+			"PRESEASON2017",
+			"SEASON2017",
 		},
 	})
 	if err != nil {
