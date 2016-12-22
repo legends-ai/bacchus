@@ -100,10 +100,10 @@ func (m *Matches) process(id *apb.MatchId) {
 	}
 
 	match, err := proto.Marshal(&apb.BacchusData_RawMatch{
-		Id:    id,
-		Patch: res.MatchInfo.Version,
-		Rank:  rank,
-		Data:  res.MatchInfo,
+		Id:      id,
+		Version: res.MatchInfo.Version,
+		Rank:    rank,
+		Data:    res.MatchInfo,
 	})
 
 	if err != nil {
