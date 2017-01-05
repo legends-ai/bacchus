@@ -113,7 +113,7 @@ func (m *Matches) process(id *apb.MatchId) {
 
 	// Publish match record to Kafka
 	m.Kafka.Input() <- &sarama.ProducerMessage{
-		Topic: "bacchus.match." + id.Region.String(),
+		Topic: "bacchus.matches." + id.Region.String(),
 		Value: sarama.ByteEncoder(match),
 	}
 
