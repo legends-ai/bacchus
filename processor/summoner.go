@@ -60,7 +60,11 @@ func (s *Summoners) Seed() {
 				Region: apb.Region_NA,
 				Id:     32875076,
 			},
-			Rank: rank,
+			Ranks: []*apb.Ranking_QueueRank{
+				{
+					Rank: rank,
+				},
+			},
 		}) // Pradyuman himself
 		return
 	}

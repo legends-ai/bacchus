@@ -87,8 +87,13 @@ func (m *Matches) process(id *apb.MatchId) {
 
 	var ranks []*apb.Rank
 	for _, ranking := range sums {
-		ranks = append(ranks, ranking.Rank)
-		if models.RankOver(ranking.Rank, m.cutoff) {
+		queueRank := rankOfRanking(ranking, res.MatchInfo.QueueType)
+		if queueRank == nil {
+			// we don't support unranked scrubs.
+			continue
+		}
+		ranks = append(ranks, queueRank)
+		if models.RankOver(queueRank, m.cutoff) {
 			m.Summoners.Offer(ranking)
 		}
 	}
@@ -123,4 +128,13 @@ func (m *Matches) process(id *apb.MatchId) {
 	}
 
 	m.Metrics.Record("match-write")
+}
+
+func rankOfRanking(ranking *apb.Ranking, queue apb.QueueType) *apb.Rank {
+	for _, rank := range ranking.Ranks {
+		if rank.Queue == queue {
+			return rank.Rank
+		}
+	}
+	return nil
 }

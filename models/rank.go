@@ -77,6 +77,17 @@ func MinRank(res []*apb.Rank) *apb.Rank {
 	return min
 }
 
+// MaxRank gets the maximum rank out of the given ranks
+func MaxRank(res []*apb.Rank) *apb.Rank {
+	max := &apb.Rank{1<<16 - 1, 1<<16 - 1}
+	for _, rank := range res {
+		if RankOver(rank, max) {
+			max = rank
+		}
+	}
+	return max
+}
+
 func RankOver(a *apb.Rank, b *apb.Rank) bool {
 	return RankToNumber(a) > RankToNumber(b)
 }

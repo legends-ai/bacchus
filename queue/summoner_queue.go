@@ -8,6 +8,7 @@ import (
 	"gopkg.in/redis.v5"
 
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
+	"github.com/asunaio/bacchus/models"
 )
 
 type SummonerQueue struct {
@@ -58,7 +59,18 @@ func (q *SummonerQueue) Start() {
 }
 
 func (q *SummonerQueue) Add(in *apb.SummonerId, ctx *apb.Ranking) {
-	list := fmt.Sprintf("%#x", ctx.Rank.Tier)
+	// Ignore the ranking if there is none.
+	if len(ctx.Ranks) == 0 {
+		return
+	}
+
+	// Extract the apb.Rank from each QueueRank
+	var theRanks []*apb.Rank
+	for _, rank := range ctx.Ranks {
+		theRanks = append(theRanks, rank.Rank)
+	}
+
+	list := fmt.Sprintf("%#x", models.MaxRank(theRanks).Tier)
 	set := fmt.Sprintf("S%s", list)
 	summoner := in.String()
 

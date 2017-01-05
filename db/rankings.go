@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 
+	"github.com/Sirupsen/logrus"
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/models"
 	"github.com/gocql/gocql"
@@ -19,6 +20,7 @@ const (
 type RankingsDAO struct {
 	// Session is the session to the Athena cluster.
 	Session *gocql.Session `inject:"t"`
+	Logger  *logrus.Logger `inject:"t"`
 }
 
 // Get grabs all rankings of a summoner.
@@ -57,8 +59,12 @@ func (r *RankingsDAO) AboveRank(rank *apb.Rank, limit int) ([]*apb.Ranking, erro
 	return ret, nil
 }
 
-// Insert stores an Athena ranking row for a summoner.
+// Insert stores a ranking row for a summoner.
 func (a *RankingsDAO) Insert(r *apb.Ranking) error {
+	if len(r.Ranks) == 0 {
+		return fmt.Errorf("Cannot insert ranking for %s as there are no ranks!", r.Summoner)
+	}
+
 	data, err := proto.Marshal(r)
 	if err != nil {
 		return err
@@ -66,6 +72,6 @@ func (a *RankingsDAO) Insert(r *apb.Ranking) error {
 	return a.Session.Query(
 		insertRankingQuery,
 		models.StringifySummonerId(r.Summoner),
-		models.RankToNumber(r.Rank), data,
+		models.RankToNumber(r.Ranks[0].Rank), data,
 	).Exec()
 }
