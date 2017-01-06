@@ -1,18 +1,6 @@
-hash: 83db44f09a5ff610bdc4f4831b2fb13097bd450865245c4f97c91425fcc20ed4
-updated: 2016-12-17T10:14:52.84662726-05:00
+hash: b64edb9184d7ce5ea873a91bffd98226f4beda9161dadd793f7170eedc3a9b55
+updated: 2017-01-06T15:25:38.791635435-06:00
 imports:
-- name: github.com/davecgh/go-spew
-  version: 346938d642f2ec3594ed81d874461961cd0faa76
-  subpackages:
-  - spew
-- name: github.com/eapache/go-resiliency
-  version: b86b1ec0dd4209a588dc1285cdd471e73525c0b3
-  subpackages:
-  - breaker
-- name: github.com/eapache/go-xerial-snappy
-  version: bb955e01b9346ac19dc29eb16586c90ded99a98c
-- name: github.com/eapache/queue
-  version: 44cc805cf13205b55f69e14bcb69867d1ae92f98
 - name: github.com/gocql/gocql
   version: db6f35eb602dd0770a7162e0e23e5cfb1cc05b91
   subpackages:
@@ -34,10 +22,6 @@ imports:
   version: e80d13ce29ede4452c43dea11e79b9bc8a15b478
 - name: github.com/kelseyhightower/envconfig
   version: 9aca109c9aec4633fced9717c4a09ecab3d33111
-- name: github.com/klauspost/crc32
-  version: cb6bfca970f6908083f26f39a79009d608efd5cd
-- name: github.com/Shopify/sarama
-  version: bd61cae2be85fa6ff40eb23dcdd24567967ac2ae
 - name: github.com/simplyianm/inject
   version: 0379a29944564e07e61ec76e59221b3f33f214d8
 - name: github.com/Sirupsen/logrus
@@ -69,12 +53,10 @@ imports:
   - stats
   - tap
   - transport
-- name: gopkg.in/bsm/ratelimit.v1
-  version: db14e161995a5177acef654cb0dd785e8ee8bc22
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/redis.v5
-  version: c6acf2ed159b22defbd9f077686cff03eba1e9b3
+  version: b9cc17bae020d9c1f467ca0f27d7706c1683c370
   subpackages:
   - internal
   - internal/consistenthash
@@ -82,8 +64,12 @@ imports:
   - internal/pool
   - internal/proto
 testImports:
+- name: github.com/davecgh/go-spew
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
+  subpackages:
+  - spew
 - name: github.com/pmezard/go-difflib
-  version: 792786c7400a136282c1664665ae0a8db921c6c2
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
   subpackages:
   - difflib
 - name: github.com/stretchr/testify
