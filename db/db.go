@@ -6,12 +6,10 @@ import (
 	"github.com/gocql/gocql"
 )
 
-const keyspace = "athena"
-
 // NewSession creates a new database session.
 func NewSession(cfg *config.AppConfig) (*gocql.Session, error) {
-	c := gocql.NewCluster(cfg.AthenaHosts...)
-	c.Keyspace = keyspace
+	c := gocql.NewCluster(cfg.CassandraHosts...)
+	c.Keyspace = cfg.CassandraKeyspace
 	c.ProtoVersion = 3
 	return c.CreateSession()
 }

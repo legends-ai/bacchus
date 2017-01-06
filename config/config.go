@@ -9,8 +9,11 @@ import (
 
 // AppConfig is the configuration for the app
 type AppConfig struct {
-	// AthenaHosts is a list of Athena Cassandra hosts.
-	AthenaHosts []string `envconfig:"athena_hosts" required:"true"`
+	// CassandraHosts is a list of Cassandra hosts.
+	CassandraHosts []string `envconfig:"cassandra_hosts" required:"true"`
+
+	// CassandraKeyspace is the Bacchus Cassandra keyspace.
+	CassandraKeyspace string `envconfig:"cassandra_keyspace" required:"true"`
 
 	// RankExpiry is the max duration since a rank is valid.
 	RankExpiry time.Duration `envconfig:"rank_expiry" default:"168h"`
