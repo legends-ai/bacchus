@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"github.com/Shopify/sarama"
 	"github.com/Sirupsen/logrus"
 	"github.com/simplyianm/inject"
 	"google.golang.org/grpc"
@@ -37,6 +36,15 @@ func NewInjector() inject.Injector {
 	charon := apb.NewCharonClient(charonConn)
 	injector.Map(charon)
 
+	// Totsuki Client
+	logger.Infof("Connecting to Totsuki at %s", cfg.TotsukiHost)
+	totsukiConn, err := grpc.Dial(cfg.TotsukiHost, grpc.WithInsecure())
+	if err != nil {
+		logger.Fatalf("Could not connect to Totsuki: %v", err)
+	}
+	totsuki := apb.NewTotsukiClient(totsukiConn)
+	injector.Map(totsuki)
+
 	// Load Cassandra cluster
 	logger.Info("Connecting to Cassandra")
 	session, err := db.NewSession(cfg)
@@ -58,14 +66,6 @@ func NewInjector() inject.Injector {
 		logger.Fatalf("Could not connect to Redis: %v", err)
 	}
 	injector.Map(redisConn)
-
-	// Kafka Producer
-	logger.Infof("Creating Kafka Producer at %v", cfg.KafkaBroker)
-	producer, err := sarama.NewAsyncProducer([]string{cfg.KafkaBroker}, nil)
-	if err != nil {
-		logger.Fatalf("Could not create kafka producer: %v", err)
-	}
-	injector.Map(producer)
 
 	// Initialize queues
 	_, err = injector.ApplyMap(queue.NewMatchQueue())

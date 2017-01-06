@@ -30,8 +30,8 @@ type AppConfig struct {
 	// RedisHost is the Redis host for the queue
 	RedisHost string `envconfig:"redis_host" default:"localhost:6379"`
 
-	// KafkaBroker is the Kafka Broker for Matches
-	KafkaBroker string `envconfig:"kafka_broker" default:"localhost:9092"`
+	// TotsukiHost is the Totsuki host/port.
+	TotsukiHost string `envconfig:"totsuki_host" default:"localhost:21215"`
 
 	// Concurrency is the number of parallel threads
 	Concurrency int `envconfig:"concurrency" default:"60"`

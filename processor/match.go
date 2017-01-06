@@ -1,27 +1,25 @@
 package processor
 
 import (
-	"github.com/Shopify/sarama"
 	"github.com/Sirupsen/logrus"
 	"github.com/asunaio/bacchus/db"
 	apb "github.com/asunaio/bacchus/gen-go/asuna"
 	"github.com/asunaio/bacchus/models"
 	"github.com/asunaio/bacchus/queue"
 	"github.com/asunaio/bacchus/rank"
-	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context"
 )
 
 // Matches is the processor for matches.
 type Matches struct {
-	Charon    apb.CharonClient     `inject:"t"`
-	Logger    *logrus.Logger       `inject:"t"`
-	Matches   *db.MatchesDAO       `inject:"t"`
-	Kafka     sarama.AsyncProducer `inject:"t"`
-	Metrics   *Metrics             `inject:"t"`
-	Ranks     *rank.LookupService  `inject:"t"`
-	Summoners *Summoners           `inject:"t"`
-	Queue     *queue.MatchQueue    `inject:"t"`
+	Charon    apb.CharonClient    `inject:"t"`
+	Logger    *logrus.Logger      `inject:"t"`
+	Matches   *db.MatchesDAO      `inject:"t"`
+	Metrics   *Metrics            `inject:"t"`
+	Ranks     *rank.LookupService `inject:"t"`
+	Summoners *Summoners          `inject:"t"`
+	Queue     *queue.MatchQueue   `inject:"t"`
+	Totsuki   apb.TotsukiClient   `inject:"t"`
 
 	cutoff *apb.Rank
 }
@@ -50,14 +48,6 @@ func (m *Matches) Offer(info *apb.CharonRpc_MatchListResponse_MatchInfo) {
 
 // Start starts processing matches.
 func (m *Matches) Start() {
-
-	// Poll for producer errors
-	go func() {
-		for err := range m.Kafka.Errors() {
-			m.Logger.Errorf("Matches Producer Error: %v", err)
-		}
-	}()
-
 	for {
 		m.process(m.Queue.Poll())
 	}
@@ -104,22 +94,18 @@ func (m *Matches) process(id *apb.MatchId) {
 		return
 	}
 
-	match, err := proto.Marshal(&apb.BacchusData_RawMatch{
+	match := &apb.BacchusData_RawMatch{
 		Id:      id,
 		Version: res.MatchInfo.Version,
 		Rank:    rank,
 		Data:    res.MatchInfo,
-	})
-
-	if err != nil {
-		m.Logger.Errorf("Error marshaling match: %v", err)
-		return
 	}
 
-	// Publish match record to Kafka
-	m.Kafka.Input() <- &sarama.ProducerMessage{
-		Topic: "bacchus.matches." + id.Region.String(),
-		Value: sarama.ByteEncoder(match),
+	// Publish match record to Totsuki
+	_, err = m.Totsuki.Write(context.TODO(), match)
+	if err != nil {
+		m.Logger.Errorf("Error sending match %s to Totsuki: %v", id, err)
+		return
 	}
 
 	// Write match id to Cassandra
