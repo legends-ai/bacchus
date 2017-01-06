@@ -10,10 +10,10 @@ import (
 // AppConfig is the configuration for the app
 type AppConfig struct {
 	// CassandraHosts is a list of Cassandra hosts.
-	CassandraHosts []string `envconfig:"cassandra_hosts" required:"true"`
+	CassandraHosts []string `envconfig:"cassandra_hosts" default:"localhost:9042"`
 
 	// CassandraKeyspace is the Bacchus Cassandra keyspace.
-	CassandraKeyspace string `envconfig:"cassandra_keyspace" required:"true"`
+	CassandraKeyspace string `envconfig:"cassandra_keyspace" default:"bacchus_dev"`
 
 	// RankExpiry is the max duration since a rank is valid.
 	RankExpiry time.Duration `envconfig:"rank_expiry" default:"168h"`
