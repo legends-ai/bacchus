@@ -26,10 +26,3 @@ func (m *MatchesDAO) Exists(id *apb.MatchId) (bool, error) {
 	}
 	return count != 0, nil
 }
-
-// Insert inserts a match id to Cassandra.
-func (m *MatchesDAO) Insert(id *apb.MatchId) error {
-	return m.Session.Query(
-		insertMatchQuery, models.StringifyMatchId(id),
-	).Exec()
-}

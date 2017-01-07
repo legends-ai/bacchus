@@ -108,11 +108,6 @@ func (m *Matches) process(id *apb.MatchId) {
 		return
 	}
 
-	// Write match id to Cassandra
-	if err := m.Matches.Insert(id); err != nil {
-		m.Logger.Errorf("Could not insert match id to Cassandra: %v", err)
-	}
-
 	m.Metrics.Record("match-write")
 }
 
